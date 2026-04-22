@@ -1,0 +1,3663 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>রক্তবন্ধন — Blood Donor Network</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;500;600;700&family=Playfair+Display:wght@700;900&family=Fira+Code:wght@500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<!-- DNS preconnect for speed -->
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+<link rel="preconnect" href="https://blood-network-a851b-default-rtdb.asia-southeast1.firebasedatabase.app" crossorigin/>
+<link rel="dns-prefetch" href="https://identitytoolkit.googleapis.com"/>
+<!-- Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ════════ VARIABLES ════════ */
+:root{
+  --bg:#F7F3F0;
+  --card:#FFFFFF;
+  --surf:#FDFAF8;
+  --red:#C8102E;
+  --red-d:#9A0B22;
+  --red-l:#FFF0F2;
+  --red-g:rgba(200,16,46,.18);
+  --txt:#1C1412;
+  --txt-m:#6B5B5E;
+  --txt-d:#A89898;
+  --bdr:#EDE5E0;
+  --bdr-r:rgba(200,16,46,.2);
+  --green:#1A8A5A;
+  --green-l:#E8F7F0;
+  --amber:#B5700A;
+  --amber-l:#FFF4E0;
+  --blue:#1565C0;
+  --shadow:0 2px 12px rgba(28,20,18,.08);
+  --shadow-lg:0 8px 32px rgba(28,20,18,.12);
+  --r:12px;
+}
+[data-theme="dark"]{
+  --bg:#0D0A0B; --card:#161213; --surf:#1E1719;
+  --txt:#F0E8E9; --txt-m:#9A8A8C; --txt-d:#5A4A4C;
+  --bdr:rgba(255,255,255,.08); --bdr-r:rgba(200,16,46,.3);
+  --red-l:rgba(200,16,46,.1);
+  --green-l:rgba(26,138,90,.12); --amber-l:rgba(181,112,10,.12);
+  --shadow:0 2px 12px rgba(0,0,0,.3); --shadow-lg:0 8px 32px rgba(0,0,0,.5);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Serif Bengali',serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden;transition:background .3s,color .3s}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--red);border-radius:4px;opacity:.5}
+
+/* ════════ ANIMATIONS ════════ */
+@keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.14)}28%{transform:scale(1)}42%{transform:scale(1.07)}56%{transform:scale(1)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes shimmer{0%{left:-100%}100%{left:200%}}
+@keyframes popIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+@keyframes fabPulse{0%,100%{box-shadow:0 6px 24px var(--red-g),0 0 0 0 var(--red-g)}70%{box-shadow:0 6px 24px var(--red-g),0 0 0 12px transparent}}
+
+/* ════════ LOADING COVER ════════ */
+#cover{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;
+  transition:opacity .4s ease;
+}
+#cover.gone{opacity:0;pointer-events:none}
+.loader-wrap{position:relative;width:60px;height:60px}
+.loader-ring{
+  position:absolute;inset:0;border-radius:50%;
+  border:3px solid var(--bdr);border-top-color:var(--red);
+  animation:spin 1s linear infinite;
+}
+.loader-icon{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:var(--red);font-size:1.3rem;animation:heartbeat 1.5s ease-in-out infinite;
+}
+.cover-txt{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--txt-m)}
+.cover-sub{font-size:.78rem;color:var(--txt-d)}
+
+/* ════════ HEADER ════════ */
+header{
+  position:sticky;top:0;z-index:80;
+  background:rgba(247,243,240,.95);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--bdr);
+  height:60px;padding:0 1.5rem;
+  display:flex;align-items:center;justify-content:space-between;
+  animation:slideDown .4s ease;
+}
+[data-theme="dark"] header{background:rgba(13,10,11,.95)}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:var(--red);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:1rem;
+  animation:heartbeat 2s ease-in-out infinite;
+  box-shadow:0 4px 14px var(--red-g);
+}
+.logo-name{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--txt);font-weight:700}
+.logo-name span{color:var(--red)}
+.header-right{display:flex;align-items:center;gap:8px}
+.hbtn{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:8px;border:1px solid var(--bdr);
+  background:transparent;color:var(--txt-m);cursor:pointer;
+  font-family:'Noto Serif Bengali',serif;font-size:.82rem;
+  transition:all .2s;
+}
+.hbtn i{font-size:.85rem}
+.hbtn:hover{border-color:var(--red);color:var(--red);background:var(--red-l)}
+.hbtn.admin-active{background:var(--red);color:#fff;border-color:var(--red);box-shadow:0 4px 14px var(--red-g)}
+.hbtn.admin-active:hover{background:var(--red-d)}
+.theme-btn{width:36px;height:36px;padding:0;justify-content:center;border-radius:50%}
+#admin-name-badge{font-size:.72rem;color:var(--txt-d)}
+
+/* ════════ HERO ════════ */
+.hero{
+  padding:3.5rem 1.5rem 2.5rem;text-align:center;
+  background:linear-gradient(160deg,var(--card) 0%,var(--bg) 100%);
+  border-bottom:1px solid var(--bdr);
+  position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;top:-60px;right:-60px;
+  width:280px;height:280px;border-radius:50%;
+  background:radial-gradient(circle,var(--red-g) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero::after{
+  content:'';position:absolute;bottom:-40px;left:-40px;
+  width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,var(--red-g) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--red-l);color:var(--red);
+  border:1px solid var(--bdr-r);border-radius:20px;
+  padding:4px 12px;font-size:.75rem;font-weight:600;
+  margin-bottom:1rem;animation:fadeUp .5s ease .1s both;
+}
+.hero h1{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(1.8rem,5vw,3rem);font-weight:900;
+  color:var(--txt);margin-bottom:.8rem;
+  animation:fadeUp .5s ease .2s both;
+  line-height:1.15;
+}
+.hero h1 span{color:var(--red)}
+.hero-sub{color:var(--txt-m);font-size:.92rem;margin-bottom:2rem;max-width:400px;margin-left:auto;margin-right:auto;line-height:1.7;animation:fadeUp .5s ease .3s both}
+.stats-wrap{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:.8rem;max-width:600px;margin:0 auto;
+  animation:fadeUp .6s ease .4s both;
+}
+.stat-box{
+  background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);
+  padding:1rem .8rem;box-shadow:var(--shadow);
+  transition:transform .2s,box-shadow .2s;
+}
+.stat-box:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.stat-n{font-family:'Fira Code',monospace;font-size:1.7rem;font-weight:700;color:var(--red);display:block;line-height:1}
+.stat-l{font-size:.68rem;color:var(--txt-d);margin-top:.3rem;display:block}
+
+/* ════════ MAIN ════════ */
+main{max-width:1100px;margin:0 auto;padding:1.5rem 1rem 6rem;overflow-x:hidden}
+
+/* ════════ SEARCH/FILTER BAR ════════ */
+.filter-bar{
+  background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);
+  padding:1rem;margin-bottom:1.5rem;
+  box-shadow:var(--shadow);
+  animation:fadeUp .4s ease both;
+}
+.search-row{position:relative;margin-bottom:.8rem}
+.search-row input{
+  width:100%;padding:.75rem 1rem .75rem 2.8rem;
+  border:1.5px solid var(--bdr);border-radius:9px;
+  font-family:'Noto Serif Bengali',serif;font-size:.9rem;
+  background:var(--surf);color:var(--txt);
+  transition:border .2s,box-shadow .2s;
+}
+.search-row input:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px var(--red-g)}
+.search-row input::placeholder{color:var(--txt-d)}
+.search-row .si{
+  position:absolute;left:.9rem;top:50%;transform:translateY(-50%);
+  color:var(--txt-d);font-size:.9rem;pointer-events:none;
+}
+.blood-chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{
+  padding:5px 12px;border-radius:20px;border:1.5px solid var(--bdr);
+  background:transparent;color:var(--txt-m);cursor:pointer;
+  font-size:.78rem;font-family:'Fira Code',monospace;font-weight:600;
+  transition:all .18s;
+}
+.chip:hover{border-color:var(--red);color:var(--red)}
+.chip.on{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 2px 10px var(--red-g)}
+
+/* ════════ DONOR GRID ════════ */
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+.dcard{
+  background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);
+  padding:1.2rem;box-shadow:var(--shadow);
+  transition:transform .25s,box-shadow .25s,border-color .25s;
+  animation:fadeUp .35s ease both;
+  position:relative;overflow:hidden;
+}
+.dcard::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--red);opacity:0;transition:opacity .25s;
+}
+.dcard:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--bdr-r)}
+.dcard:hover::before{opacity:1}
+
+.card-head{display:flex;align-items:center;gap:.9rem;margin-bottom:1rem;padding-bottom:.9rem;border-bottom:1px solid var(--bdr)}
+.blood-badge{
+  width:48px;height:48px;border-radius:12px;flex-shrink:0;
+  background:var(--red);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Fira Code',monospace;font-size:.95rem;font-weight:700;
+  box-shadow:0 4px 12px var(--red-g);
+}
+.card-info-top{flex:1;min-width:0}
+.card-name{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-loc{font-size:.78rem;color:var(--txt-m);display:flex;align-items:center;gap:4px;margin-top:2px}
+
+.card-rows{display:flex;flex-direction:column;gap:.45rem;margin-bottom:1rem}
+.card-row{display:flex;align-items:center;gap:.6rem;font-size:.82rem;color:var(--txt-m)}
+.card-row i{width:16px;text-align:center;color:var(--red);opacity:.7;font-size:.8rem}
+
+/* cooldown */
+.cd-wrap{background:var(--surf);border:1px solid var(--bdr);border-radius:9px;padding:.75rem .9rem;margin-bottom:.9rem}
+.cd-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.45rem}
+.cd-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--txt-d);font-weight:600}
+.cd-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:12px;font-size:.7rem;font-weight:700}
+.pill-r{background:var(--green-l);color:var(--green)}.pill-w{background:var(--amber-l);color:var(--amber)}.pill-f{background:var(--red-l);color:var(--red)}.pill-n{background:var(--bdr);color:var(--txt-d)}
+.cd-bar-bg{background:var(--bdr);border-radius:4px;height:6px;overflow:hidden;margin-bottom:.45rem}
+.cd-bar{height:100%;border-radius:4px;transition:width 1s ease;position:relative;overflow:hidden}
+.cd-bar::after{content:'';position:absolute;top:0;width:30%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);animation:shimmer 2s linear infinite}
+.bar-r{background:linear-gradient(90deg,#9A0B22,var(--red))}.bar-a{background:linear-gradient(90deg,#8B4000,var(--amber))}.bar-g{background:linear-gradient(90deg,#0D6040,var(--green))}
+.cd-days{font-family:'Fira Code',monospace;font-size:.72rem;color:var(--txt-d)}
+
+.card-footer{display:flex;gap:.5rem}
+.cta-btn{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:8px;border-radius:8px;border:1.5px solid var(--bdr);
+  background:transparent;color:var(--txt-m);cursor:pointer;
+  font-size:.8rem;font-family:'Noto Serif Bengali',serif;
+  transition:all .18s;
+}
+.cta-btn i{font-size:.8rem}
+.cta-call{border-color:var(--bdr-r);color:var(--red)}
+.cta-call:hover{background:var(--red);color:#fff;border-color:var(--red);box-shadow:0 3px 12px var(--red-g)}
+
+/* empty/loading state */
+.empty-state{grid-column:1/-1;text-align:center;padding:4rem 2rem;animation:fadeIn .4s ease}
+.empty-state i{font-size:3rem;color:var(--bdr);margin-bottom:1rem;display:block}
+.empty-state h3{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--txt-m);margin-bottom:.4rem}
+.empty-state p{font-size:.85rem;color:var(--txt-d)}
+
+/* ════════ FAB ════════ */
+.fab{
+  position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);
+  z-index:70;
+  width:58px;height:58px;border-radius:50%;
+  background:var(--red);color:#fff;border:none;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;cursor:pointer;
+  box-shadow:0 6px 24px var(--red-g);
+  animation:fabPulse 2.5s ease-in-out infinite;
+  transition:transform .2s,background .2s;
+}
+.fab:hover{transform:translateX(-50%) scale(1.1);background:var(--red-d)}
+.fab:active{transform:translateX(-50%) scale(.96)}
+.fab-label{
+  position:fixed;bottom:6.2rem;left:50%;transform:translateX(-50%);
+  background:var(--txt);color:var(--bg);
+  font-size:.72rem;padding:4px 10px;border-radius:20px;
+  white-space:nowrap;z-index:70;opacity:0;
+  pointer-events:none;transition:opacity .2s;
+}
+.fab:hover + .fab-label{opacity:1}
+/* hide FAB on admin page */
+.fab-hidden{display:none!important}
+
+/* ════════ ADMIN PANEL ════════ */
+#pg-admin{display:none}
+.admin-wrap{padding-bottom:2rem;overflow-x:hidden;width:100%}
+
+/* Admin Topbar */
+.admin-bar{
+  background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);
+  padding:1rem 1.2rem;margin-bottom:1.2rem;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem;
+  box-shadow:var(--shadow);animation:fadeUp .4s ease;
+}
+.admin-bar-left{display:flex;align-items:center;gap:.8rem}
+.admin-avatar{
+  width:40px;height:40px;border-radius:10px;background:var(--red);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem;
+}
+.admin-bar-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700}
+.admin-bar-sub{font-size:.72rem;color:var(--txt-d);margin-top:1px}
+.admin-tag{
+  background:linear-gradient(135deg,#D4A547,#A07020);color:#fff;
+  font-size:.62rem;font-weight:800;padding:3px 8px;border-radius:6px;letter-spacing:.07em;
+}
+.admin-stats{display:flex;gap:.6rem;flex-wrap:wrap}
+.astat{
+  display:flex;align-items:center;gap:.5rem;
+  background:var(--surf);border:1px solid var(--bdr);
+  border-radius:8px;padding:.45rem .8rem;
+  font-size:.78rem;
+}
+.astat i{font-size:.85rem}
+.astat-n{font-family:'Fira Code',monospace;font-weight:700;font-size:.95rem}
+.astat-l{color:var(--txt-m)}
+.btn-logout{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:8px;border:1.5px solid var(--bdr);
+  background:transparent;color:var(--txt-m);cursor:pointer;font-size:.8rem;
+  font-family:'Noto Serif Bengali',serif;transition:all .2s;
+}
+.btn-logout:hover{border-color:#FF5252;color:#FF5252;background:rgba(255,82,82,.06)}
+.btn-add-donor{
+  display:flex;align-items:center;gap:6px;
+  padding:8px 16px;border-radius:8px;border:none;
+  background:var(--red);color:#fff;cursor:pointer;font-size:.84rem;
+  font-family:'Noto Serif Bengali',serif;font-weight:600;
+  box-shadow:0 3px 12px var(--red-g);transition:all .2s;
+}
+.btn-add-donor:hover{background:var(--red-d);transform:translateY(-1px)}
+
+/* Admin Cards Grid (mobile-first) */
+#admin-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:.8rem;
+}
+@media(min-width:600px){#admin-grid{grid-template-columns:1fr 1fr}}
+@media(min-width:900px){#admin-grid{grid-template-columns:1fr 1fr 1fr}}
+
+.acard{
+  background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);
+  padding:1rem;box-shadow:var(--shadow);
+  animation:popIn .3s ease both;
+  transition:box-shadow .2s,border-color .2s;
+}
+.acard:hover{box-shadow:var(--shadow-lg);border-color:var(--bdr-r)}
+.acard-head{display:flex;align-items:center;gap:.8rem;margin-bottom:.8rem;padding-bottom:.8rem;border-bottom:1px solid var(--bdr)}
+.acard-badge{
+  width:44px;height:44px;border-radius:10px;flex-shrink:0;
+  background:var(--red);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Fira Code',monospace;font-size:.9rem;font-weight:700;
+}
+.acard-name{font-weight:700;font-size:.95rem;color:var(--txt)}
+.acard-sub{font-size:.74rem;color:var(--txt-m);margin-top:2px}
+.acard-status{margin-left:auto;flex-shrink:0}
+
+.acard-fields{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.8rem}
+.afield{display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--txt-m)}
+.afield i{width:16px;text-align:center;color:var(--red);opacity:.6;font-size:.78rem}
+
+/* cooldown in admin card */
+.acd{background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:.65rem .8rem;margin-bottom:.8rem}
+.acd-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:.35rem;font-size:.68rem;color:var(--txt-d);text-transform:uppercase;letter-spacing:.07em;font-weight:600}
+.acd-bar-bg{background:var(--bdr);border-radius:4px;height:5px;overflow:hidden;margin-bottom:.35rem}
+.acd-bar{height:100%;border-radius:4px;transition:width 1s ease}
+.acd-row{display:flex;justify-content:space-between;align-items:center;font-size:.72rem;color:var(--txt-d)}
+.acd-next{font-family:'Fira Code',monospace;font-size:.7rem}
+
+/* date picker inline */
+.date-picker{
+  width:100%;padding:6px 8px;border:1.5px solid var(--bdr);border-radius:7px;
+  background:var(--surf);color:var(--txt);font-family:'Fira Code',monospace;font-size:.78rem;
+  transition:border .2s;margin-top:.4rem;
+}
+.date-picker:focus{outline:none;border-color:var(--red)}
+
+.acard-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+.aact{
+  flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:5px;
+  padding:7px 8px;border-radius:7px;border:1.5px solid var(--bdr);
+  background:transparent;color:var(--txt-m);cursor:pointer;font-size:.78rem;
+  font-family:'Noto Serif Bengali',serif;transition:all .18s;white-space:nowrap;
+}
+.aact i{font-size:.76rem}
+.aact-don{border-color:var(--bdr-r);color:var(--red)}
+.aact-don:hover{background:var(--red);color:#fff;border-color:var(--red);box-shadow:0 2px 10px var(--red-g)}
+.aact-edit{border-color:rgba(21,101,192,.2);color:var(--blue)}
+.aact-edit:hover{background:rgba(21,101,192,.08);border-color:var(--blue)}
+.aact-del{border-color:rgba(255,50,50,.2);color:#E53935}
+.aact-del:hover{background:rgba(255,50,50,.08);border-color:#E53935}
+
+/* ════════ MODALS — MOBILE-APP STYLE ════════ */
+.overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  z-index:200;align-items:flex-end;justify-content:center;
+  touch-action:none;
+}
+.overlay.open{display:flex;animation:fadeIn .22s ease}
+@media(min-width:600px){.overlay{align-items:center}}
+
+.modal{
+  background:var(--card);
+  border-radius:22px 22px 0 0;
+  padding:0 0 env(safe-area-inset-bottom,0);
+  width:100%;max-width:540px;max-height:92vh;
+  display:flex;flex-direction:column;
+  box-shadow:0 -12px 48px rgba(0,0,0,.22);
+  position:relative;
+  /* slide-up entry */
+  animation:slideUp .32s cubic-bezier(.34,1.4,.64,1);
+  will-change:transform;
+  transition:transform .28s cubic-bezier(.4,0,.2,1);
+  user-select:none;
+}
+@media(min-width:600px){.modal{border-radius:22px;max-height:88vh;box-shadow:var(--shadow-lg)}}
+
+/* scroll area inside modal */
+.modal-scroll{
+  overflow-y:auto;padding:0 1.4rem 1.4rem;
+  flex:1;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+}
+
+/* drag handle — pill at top */
+.modal-handle-wrap{
+  display:flex;justify-content:center;align-items:center;
+  padding:.75rem 0 .4rem;cursor:grab;flex-shrink:0;
+}
+.modal-handle-wrap:active{cursor:grabbing}
+.modal-handle{
+  width:44px;height:5px;background:var(--bdr);border-radius:3px;
+  transition:background .2s,width .2s;
+}
+.modal-handle-wrap:hover .modal-handle{background:var(--red);width:52px}
+@media(min-width:600px){.modal-handle-wrap{display:none}}
+
+/* slide-to-close hint strip */
+.slide-hint{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:.28rem 0 .6rem;
+  font-size:.66rem;color:var(--txt-d);letter-spacing:.04em;
+  flex-shrink:0;
+}
+.slide-hint i{font-size:.6rem;opacity:.6}
+@media(min-width:600px){.slide-hint{display:none}}
+
+.modal-head{
+  font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;
+  padding:1rem 1.4rem .2rem;
+  display:flex;align-items:center;gap:.6rem;color:var(--txt);
+  flex-shrink:0;
+}
+.modal-head i{color:var(--red)}
+
+.form-stack{display:flex;flex-direction:column;gap:.9rem}
+.fg{display:flex;flex-direction:column;gap:.35rem}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.fg label{font-size:.74rem;color:var(--txt-d);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.fg input,.fg select,.fg textarea{
+  padding:.78rem 1rem;border:1.5px solid var(--bdr);border-radius:12px;
+  background:var(--surf);color:var(--txt);
+  font-family:'Noto Serif Bengali',serif;font-size:.9rem;
+  transition:border .2s,box-shadow .2s;
+  -webkit-appearance:none;appearance:none;
+  font-size:16px; /* prevent iOS zoom */
+}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px var(--red-g)}
+.fg select option{background:var(--card)}
+.fg small{font-size:.72rem;color:var(--txt-d);margin-top:-.1rem}
+
+/* sticky action bar at bottom */
+.modal-footer{
+  display:flex;gap:.6rem;padding:1rem 1.4rem calc(1rem + env(safe-area-inset-bottom,0));
+  border-top:1px solid var(--bdr);background:var(--card);
+  flex-shrink:0;position:sticky;bottom:0;
+}
+@media(min-width:600px){.modal-footer{padding:1rem 1.4rem 1.2rem}}
+
+.btn-cancel{
+  flex:1;padding:.75rem 1rem;border-radius:12px;
+  border:1.5px solid var(--bdr);background:var(--surf);color:var(--txt-m);
+  cursor:pointer;font-family:'Noto Serif Bengali',serif;font-size:.9rem;
+  transition:all .18s;text-align:center;
+  min-height:48px; /* touch target */
+}
+.btn-cancel:hover{border-color:var(--txt-m);color:var(--txt)}
+.btn-cancel:active{transform:scale(.97)}
+.btn-save{
+  flex:2;padding:.75rem 1.2rem;border-radius:12px;border:none;
+  background:var(--red);color:#fff;cursor:pointer;font-family:'Noto Serif Bengali',serif;
+  font-size:.9rem;font-weight:700;
+  box-shadow:0 3px 14px var(--red-g);transition:all .18s;
+  min-height:48px; /* touch target */
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn-save:hover{background:var(--red-d)}
+.btn-save:active{transform:scale(.97)}
+.btn-save:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* ════════ INVOICE STYLES ════════ */
+.invoice-wrap{
+  background:#fff;color:#1C1412;
+  border-radius:12px;border:1.5px solid #EDE5E0;
+  padding:1.4rem;font-family:'Noto Serif Bengali',serif;
+  font-size:.82rem;line-height:1.7;
+}
+[data-theme="dark"] .invoice-wrap{background:#1E1719;color:var(--txt);border-color:var(--bdr)}
+.invoice-logo-row{display:flex;align-items:center;gap:.7rem;margin-bottom:1rem;padding-bottom:.8rem;border-bottom:2px solid #C8102E}
+.invoice-logo-icon{width:38px;height:38px;border-radius:10px;background:#C8102E;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem;flex-shrink:0}
+.invoice-logo-name{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:900;color:#C8102E}
+.invoice-logo-sub{font-size:.65rem;color:#A89898}
+.invoice-no{font-family:'Fira Code',monospace;font-size:.7rem;color:#A89898;margin-left:auto;text-align:right}
+.invoice-status-banner{
+  display:flex;align-items:center;gap:.5rem;
+  padding:.6rem .9rem;border-radius:9px;margin-bottom:1rem;
+  font-weight:700;font-size:.82rem;
+}
+.invoice-table{width:100%;border-collapse:collapse;margin:.8rem 0}
+.invoice-table td{padding:.38rem .5rem;border-bottom:1px solid #EDE5E0;font-size:.8rem}
+[data-theme="dark"] .invoice-table td{border-bottom-color:var(--bdr)}
+.invoice-table td:first-child{color:#A89898;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;width:42%;font-weight:600}
+.invoice-table td:last-child{color:#1C1412;font-weight:600}
+[data-theme="dark"] .invoice-table td:last-child{color:var(--txt)}
+.invoice-footer-note{font-size:.7rem;color:#A89898;text-align:center;margin-top:1rem;padding-top:.8rem;border-top:1px dashed #EDE5E0;line-height:1.6}
+[data-theme="dark"] .invoice-footer-note{border-top-color:var(--bdr)}
+
+/* DONATE INFO BOX */
+.donate-info{
+  background:var(--red-l);border:1.5px solid var(--bdr-r);border-radius:10px;
+  padding:1rem 1.1rem;margin-bottom:1.1rem;font-size:.85rem;line-height:1.9;
+}
+.donate-info strong{color:var(--red)}
+
+/* LOGIN MODAL */
+.login-box{
+  background:var(--card);border-radius:18px;
+  padding:2rem;width:min(380px,95vw);
+  animation:popIn .3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:var(--shadow-lg);
+  border-top:4px solid var(--red);
+}
+.login-icon{
+  width:56px;height:56px;border-radius:14px;
+  background:var(--red);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;margin:0 auto 1.2rem;
+  box-shadow:0 6px 20px var(--red-g);
+  animation:heartbeat 2s ease-in-out infinite;
+}
+.login-box h2{font-family:'Playfair Display',serif;font-size:1.4rem;text-align:center;margin-bottom:.3rem}
+.login-box p{text-align:center;font-size:.8rem;color:var(--txt-m);margin-bottom:1.4rem}
+.login-err{color:var(--red);font-size:.8rem;text-align:center;margin:.3rem 0;min-height:1.2em}
+
+/* ════════ TOAST ════════ */
+#toast{
+  position:fixed;bottom:7rem;left:50%;transform:translateX(-50%) translateY(10px) scale(.96);
+  background:var(--txt);color:var(--bg);
+  padding:.75rem 1.3rem;border-radius:30px;
+  font-size:.85rem;opacity:0;
+  transition:all .35s cubic-bezier(.34,1.56,.64,1);
+  z-index:500;pointer-events:none;
+  white-space:nowrap;
+  box-shadow:0 6px 24px rgba(0,0,0,.2);
+  display:flex;align-items:center;gap:8px;
+  max-width:90vw;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}
+#toast.ok{background:var(--green)}
+#toast.err{background:var(--red)}
+#toast.warn{background:var(--amber)}
+
+
+/* ════════ EXPERIENCE COUNTER ════════ */
+.exp-counter{
+  display:flex;align-items:center;gap:0;
+  border:1.5px solid var(--bdr);border-radius:9px;
+  overflow:hidden;background:var(--surf);
+  transition:border .2s,box-shadow .2s;
+}
+.exp-counter:focus-within{border-color:var(--red);box-shadow:0 0 0 3px var(--red-g)}
+.exp-btn{
+  width:38px;height:42px;border:none;background:transparent;
+  color:var(--txt-m);cursor:pointer;font-size:1.1rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s,color .15s;flex-shrink:0;
+}
+.exp-btn:hover{background:var(--red-l);color:var(--red)}
+.exp-btn:active{background:var(--red);color:#fff}
+.exp-val{
+  flex:1;text-align:center;border:none;background:transparent;
+  color:var(--txt);font-family:'Fira Code',monospace;font-size:1rem;font-weight:700;
+  padding:0;min-width:0;
+}
+.exp-val:focus{outline:none}
+.exp-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:2px 9px;border-radius:12px;font-size:.7rem;font-weight:700;
+  font-family:'Fira Code',monospace;
+}
+.exp-0{background:var(--bdr);color:var(--txt-d)}
+.exp-new{background:var(--green-l);color:var(--green)}
+.exp-mid{background:var(--amber-l);color:var(--amber)}
+.exp-vet{background:var(--red-l);color:var(--red)}
+.exp-hero{background:linear-gradient(135deg,#D4A547,#A07020);color:#fff}
+/* admin experience control in acard */
+.exp-inline{
+  display:flex;align-items:center;gap:6px;
+  background:var(--surf);border:1.5px solid var(--bdr);
+  border-radius:8px;padding:.35rem .6rem;
+  transition:border .2s;
+}
+.exp-inline:focus-within{border-color:var(--red)}
+.exp-inline-btn{
+  width:26px;height:26px;border-radius:6px;border:1px solid var(--bdr);
+  background:var(--card);color:var(--txt-m);cursor:pointer;font-size:.85rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;flex-shrink:0;
+}
+.exp-inline-btn:hover{background:var(--red);color:#fff;border-color:var(--red)}
+.exp-inline-num{
+  font-family:'Fira Code',monospace;font-size:.95rem;font-weight:700;
+  color:var(--txt);min-width:28px;text-align:center;
+}
+.exp-inline-label{font-size:.72rem;color:var(--txt-d)}
+
+
+/* ════════ PENDING / STATUS ════════ */
+.dcard.pending{
+  border-color:rgba(181,112,10,.45);
+  background:linear-gradient(180deg,var(--amber-l) 0%,var(--card) 60%);
+}
+[data-theme="dark"] .dcard.pending{
+  background:linear-gradient(180deg,rgba(181,112,10,.08) 0%,var(--card) 60%);
+}
+.pending-banner{
+  display:flex;align-items:center;gap:6px;
+  background:var(--amber-l);border:1px solid rgba(181,112,10,.35);
+  border-radius:8px;padding:7px 11px;margin-bottom:.8rem;
+  font-size:.78rem;color:var(--amber);font-weight:600;
+}
+.pending-banner i{font-size:.85rem}
+/* blocked call button */
+.cta-call-blocked{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:8px;border-radius:8px;border:1.5px solid var(--bdr);
+  background:var(--surf);color:var(--txt-d);cursor:not-allowed;
+  font-size:.8rem;font-family:'Noto Serif Bengali',serif;
+  opacity:.55;
+}
+/* request button */
+.cta-request{
+  border-color:rgba(26,138,90,.35)!important;
+  color:var(--green)!important;
+}
+.cta-request:hover{
+  background:var(--green)!important;
+  color:#fff!important;
+  border-color:var(--green)!important;
+  box-shadow:0 3px 12px rgba(26,138,90,.28)!important;
+}
+
+/* ════════ REQUEST FILTER BAR ════════ */
+.req-filter-bar{
+  display:flex;align-items:center;
+  background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;
+  padding:.3rem .5rem;margin-bottom:1rem;
+  box-shadow:var(--shadow);gap:0;overflow:hidden;
+}
+.req-filter-item{
+  display:flex;align-items:center;gap:.5rem;
+  flex:1;padding:.4rem .6rem;
+}
+.req-filter-icon{
+  font-size:.95rem;color:var(--red);flex-shrink:0;
+}
+.req-filter-item input[type="date"],
+.req-filter-item select{
+  flex:1;border:none;background:transparent;
+  color:var(--txt);font-family:'Noto Serif Bengali',serif;font-size:.84rem;
+  outline:none;cursor:pointer;min-width:0;
+}
+.req-filter-item input[type="date"]::-webkit-calendar-picker-indicator{
+  opacity:.5;cursor:pointer;
+}
+.req-filter-item select option{background:var(--card);color:var(--txt)}
+.req-filter-divider{
+  width:1px;height:28px;background:var(--bdr);flex-shrink:0;margin:0 .2rem;
+}
+
+/* ════════ COMPACT REQUEST ROW ════════ */
+.req-row{
+  display:flex;align-items:center;gap:.6rem;
+  background:var(--card);border:1px solid var(--bdr);border-radius:10px;
+  padding:.65rem .8rem;box-shadow:var(--shadow);
+  animation:fadeUp .3s ease both;
+  transition:box-shadow .2s,border-color .2s;
+  overflow:hidden;min-width:0;box-sizing:border-box;width:100%;
+}
+.req-row:hover{box-shadow:var(--shadow-lg);border-color:var(--bdr-r)}
+.req-row-avatar{
+  width:36px;height:36px;border-radius:8px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--green),#0D6040);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:.85rem;
+}
+.req-row-avatar.acc{background:linear-gradient(135deg,var(--red),var(--red-d));animation:heartbeat 1.5s ease-in-out infinite}
+.req-row-avatar.done{background:linear-gradient(135deg,var(--green),#0D6040)}
+.req-row-info{flex:1;min-width:0;overflow:hidden}
+.req-row-name{font-weight:700;font-size:.85rem;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.req-row-meta{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin-top:2px}
+.req-row-tag{font-size:.67rem;color:var(--txt-m);display:flex;align-items:center;gap:3px;white-space:nowrap}
+.req-row-tag i{color:var(--green);opacity:.7;font-size:.65rem}
+.req-row-right{display:flex;align-items:center;gap:.3rem;flex-shrink:0}
+.rcard-status{white-space:nowrap}
+.req-view-btn{
+  display:flex;align-items:center;gap:4px;
+  padding:4px 9px;border-radius:7px;border:1.5px solid rgba(26,138,90,.35);
+  background:transparent;color:var(--green);cursor:pointer;
+  font-size:.71rem;font-family:'Noto Serif Bengali',serif;font-weight:600;
+  transition:all .15s;white-space:nowrap;flex-shrink:0;
+}
+.req-view-btn:hover{background:var(--green);color:#fff;border-color:var(--green)}
+.req-view-btn i{font-size:.69rem}
+@media(max-width:500px){
+  .req-row-right{flex-wrap:wrap;gap:.25rem}
+  .rcard-status{font-size:.58rem!important;padding:2px 6px!important}
+}
+
+/* Request detail popup overlay */
+.req-popup-overlay{
+  position:fixed;inset:0;z-index:9500;
+  background:rgba(0,0,0,.5);backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;
+  padding:1rem;animation:fadeIn .2s ease;
+}
+.req-popup{
+  background:var(--card);border:1px solid var(--bdr);border-radius:16px;
+  width:100%;max-width:460px;max-height:90vh;overflow-y:auto;
+  box-shadow:var(--shadow-lg);animation:slideUp .25s ease;
+}
+.req-popup-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 1.2rem .8rem;border-bottom:1px solid var(--bdr);
+  position:sticky;top:0;background:var(--card);z-index:1;border-radius:16px 16px 0 0;
+}
+.req-popup-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--txt)}
+.req-popup-close{
+  width:32px;height:32px;border-radius:8px;border:1.5px solid var(--bdr);
+  background:transparent;color:var(--txt-m);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:.9rem;
+  transition:all .15s;
+}
+.req-popup-close:hover{background:var(--red);color:#fff;border-color:var(--red)}
+.req-popup-body{padding:1rem 1.2rem}
+.req-popup-status{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 12px;border-radius:12px;font-size:.74rem;font-weight:700;
+  margin-bottom:1rem;
+}
+.req-popup-section{
+  background:var(--surf);border:1px solid var(--bdr);border-radius:10px;
+  padding:.8rem 1rem;margin-bottom:.8rem;
+}
+.req-popup-section-title{
+  font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--txt-d);font-weight:700;margin-bottom:.6rem;
+}
+.req-popup-field{display:flex;gap:.5rem;align-items:flex-start;font-size:.82rem;color:var(--txt-m);margin-bottom:.35rem}
+.req-popup-field:last-child{margin-bottom:0}
+.req-popup-field i{width:16px;text-align:center;color:var(--green);opacity:.7;font-size:.78rem;margin-top:2px;flex-shrink:0}
+.req-popup-field strong{color:var(--txt)}
+.req-popup-actions{display:flex;gap:.5rem;flex-wrap:wrap;padding-top:.8rem;border-top:1px solid var(--bdr);margin-top:.5rem}
+.req-popup-actions .ract{flex:1;min-width:calc(50% - .25rem)}
+.req-donor-info{
+  background:var(--red-l);border:1.5px solid var(--bdr-r);border-radius:10px;
+  padding:.9rem 1.1rem;margin-bottom:1.1rem;font-size:.85rem;line-height:1.8;
+}
+.req-donor-info strong{color:var(--red)}
+/* admin request card */
+.rcard{
+  background:var(--card);border:1.5px solid rgba(26,138,90,.35);border-radius:var(--r);
+  padding:1rem;box-shadow:var(--shadow);animation:popIn .3s ease both;
+  position:relative;overflow:hidden;
+  transition:box-shadow .2s,border-color .2s;
+}
+.rcard::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--green),#0D6040);
+}
+.rcard:hover{box-shadow:var(--shadow-lg);border-color:rgba(26,138,90,.55)}
+.rcard-head{display:flex;align-items:center;gap:.8rem;margin-bottom:.8rem;padding-bottom:.8rem;border-bottom:1px solid var(--bdr)}
+.rcard-avatar{
+  width:44px;height:44px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--green),#0D6040);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:1rem;
+}
+.rcard-name{font-weight:700;font-size:.95rem;color:var(--txt)}
+.rcard-sub{font-size:.74rem;color:var(--txt-m);margin-top:2px}
+.rcard-fields{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.8rem}
+.rfield{display:flex;align-items:flex-start;gap:.5rem;font-size:.8rem;color:var(--txt-m)}
+.rfield i{width:16px;text-align:center;color:var(--green);opacity:.7;font-size:.78rem;margin-top:2px;flex-shrink:0}
+.rcard-status{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 10px;border-radius:12px;font-size:.7rem;font-weight:700;
+}
+.rs-pending{background:var(--amber-l);color:var(--amber);border:1px solid rgba(181,112,10,.25)}
+.rs-accepted{background:var(--green-l);color:var(--green);border:1px solid rgba(26,138,90,.25)}
+.rs-rejected{background:var(--red-l);color:var(--red);border:1px solid var(--bdr-r)}
+.rs-donated{background:linear-gradient(135deg,var(--green-l),rgba(26,138,90,.2));color:var(--green);border:1px solid rgba(26,138,90,.4);font-weight:800}
+.rcard-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+/* 2-row action layout for request cards */
+.rcard-action-wrap{display:flex;flex-direction:column;gap:.45rem}
+.ract-row{display:flex;gap:.45rem;flex-wrap:wrap}
+.ract-row .ract{flex:1;min-width:calc(33% - .3rem)}
+@media(max-width:400px){.ract-row .ract{flex:1 1 100%}}
+/* donate done button */
+.ract-donate-done{
+  border-color:rgba(200,16,46,.4)!important;
+  color:var(--red)!important;
+  background:var(--red-l)!important;
+  font-weight:700!important;
+}
+.ract-donate-done:hover{background:var(--red)!important;color:#fff!important;border-color:var(--red)!important;box-shadow:0 2px 10px var(--red-g)!important}
+.ract{
+  flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:5px;
+  padding:7px 8px;border-radius:7px;border:1.5px solid var(--bdr);
+  background:transparent;color:var(--txt-m);cursor:pointer;font-size:.78rem;
+  font-family:'Noto Serif Bengali',serif;transition:all .18s;white-space:nowrap;
+}
+.ract i{font-size:.76rem}
+.ract-call{border-color:var(--bdr-r);color:var(--red)}
+.ract-call:hover{background:var(--red);color:#fff;border-color:var(--red);box-shadow:0 2px 10px var(--red-g)}
+.ract-ok{border-color:rgba(26,138,90,.35);color:var(--green)}
+.ract-ok:hover{background:var(--green);color:#fff;border-color:var(--green);box-shadow:0 2px 10px rgba(26,138,90,.25)}
+.ract-x{border-color:rgba(229,57,53,.2);color:#E53935}
+.ract-x:hover{background:rgba(229,57,53,.08);border-color:#E53935}
+/* requests section header */
+.req-section-header{
+  display:flex;align-items:center;gap:.6rem;
+  padding:.6rem 1rem;background:var(--green-l);
+  border:1px solid rgba(26,138,90,.25);border-radius:10px;
+  margin-bottom:.8rem;font-weight:700;font-size:.88rem;color:var(--green);
+}
+.req-count-badge{
+  background:var(--green);color:#fff;
+  font-size:.65rem;font-weight:800;padding:2px 7px;border-radius:10px;
+  font-family:'Fira Code',monospace;
+}
+/* new requests badge in sidebar */
+.snav-req-badge{
+  position:absolute;right:.6rem;top:50%;transform:translateY(-50%);
+  background:var(--green);color:#fff;
+  font-size:.58rem;font-weight:800;min-width:18px;height:18px;
+  border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;
+  font-family:'Fira Code',monospace;
+}
+@media(max-width:700px){.snav-req-badge{position:static;transform:none}}
+/* admin pending section */
+.pending-section{margin-bottom:1.4rem}
+.pending-header{
+  display:flex;align-items:center;gap:.6rem;
+  padding:.6rem 1rem;background:var(--amber-l);
+  border:1px solid rgba(181,112,10,.3);border-radius:10px;
+  margin-bottom:.8rem;font-weight:700;font-size:.88rem;color:var(--amber);
+}
+.pending-count-badge{
+  background:var(--amber);color:#fff;
+  font-size:.65rem;font-weight:800;padding:2px 7px;border-radius:10px;
+  font-family:'Fira Code',monospace;
+}
+.acard.acard-pending{
+  border:2px solid rgba(181,112,10,.5);
+  background:linear-gradient(180deg,rgba(181,112,10,.06) 0%,var(--card) 50%);
+}
+.acard-pending-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  background:var(--amber-l);color:var(--amber);
+  border:1px solid rgba(181,112,10,.3);
+  border-radius:6px;padding:2px 8px;font-size:.68rem;font-weight:700;
+  margin-bottom:.5rem;
+}
+.aact-approve{border-color:rgba(26,138,90,.35);color:var(--green)}
+.aact-approve:hover{background:var(--green);color:#fff;border-color:var(--green);box-shadow:0 2px 10px rgba(26,138,90,.25)}
+.aact-reject{border-color:rgba(255,50,50,.2);color:#E53935}
+.aact-reject:hover{background:rgba(255,50,50,.08);border-color:#E53935}
+/* confirmed section divider */
+.confirmed-header{
+  display:flex;align-items:center;gap:.6rem;
+  padding:.5rem .8rem;margin-bottom:.8rem;
+  font-weight:700;font-size:.82rem;color:var(--txt-m);
+  border-bottom:1px solid var(--bdr);
+}
+/* admin stats — pending count */
+.astat.astat-pend .astat-n{color:var(--amber)}
+
+
+/* ════════ ADMIN TABS ════════ */
+.admin-tabs{
+  display:flex;gap:.4rem;flex-wrap:wrap;
+  background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);
+  padding:.6rem;margin-bottom:1rem;box-shadow:var(--shadow);
+}
+.atab{
+  display:flex;align-items:center;gap:5px;
+  padding:6px 14px;border-radius:8px;border:1.5px solid var(--bdr);
+  background:transparent;color:var(--txt-m);cursor:pointer;
+  font-family:'Noto Serif Bengali',serif;font-size:.8rem;font-weight:600;
+  transition:all .18s;
+}
+.atab i{font-size:.8rem}
+.atab:hover{border-color:var(--red);color:var(--red);background:var(--red-l)}
+.atab.on{background:var(--red);color:#fff;border-color:var(--red);box-shadow:0 2px 10px var(--red-g)}
+.atab.on-amber{background:var(--amber);color:#fff;border-color:var(--amber);box-shadow:0 2px 10px rgba(181,112,10,.3)}
+.atab-cnt{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:18px;height:18px;border-radius:9px;
+  background:rgba(255,255,255,.3);font-size:.62rem;font-weight:800;
+  padding:0 4px;font-family:'Fira Code',monospace;
+}
+.atab:not(.on):not(.on-amber) .atab-cnt{background:var(--bdr);color:var(--txt-d)}
+
+/* ════════ ADMIN SORT/FILTER BAR ════════ */
+.admin-filter{
+  display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;
+  margin-bottom:1rem;
+}
+.admin-search-wrap{position:relative;flex:1;min-width:160px}
+.admin-search-wrap i{position:absolute;left:.8rem;top:50%;transform:translateY(-50%);color:var(--txt-d);font-size:.85rem;pointer-events:none}
+.admin-search{
+  width:100%;padding:.55rem .9rem .55rem 2.4rem;
+  border:1.5px solid var(--bdr);border-radius:8px;
+  background:var(--surf);color:var(--txt);
+  font-family:'Noto Serif Bengali',serif;font-size:.84rem;
+  transition:border .2s,box-shadow .2s;
+}
+.admin-search:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px var(--red-g)}
+.asort{
+  padding:.52rem .9rem;border-radius:8px;border:1.5px solid var(--bdr);
+  background:var(--surf);color:var(--txt-m);cursor:pointer;
+  font-family:'Noto Serif Bengali',serif;font-size:.8rem;
+  transition:all .18s;
+}
+.asort:hover,.asort:focus{border-color:var(--red);outline:none}
+
+/* ════════ COMPACT DONOR ROW CARD ════════ */
+.drow{
+  display:flex;align-items:center;gap:.8rem;
+  background:var(--card);border:1px solid var(--bdr);border-radius:10px;
+  padding:.75rem 1rem;box-shadow:var(--shadow);
+  transition:box-shadow .2s,border-color .2s,transform .15s;
+  animation:fadeUp .3s ease both;
+  cursor:default;
+}
+.drow:hover{box-shadow:var(--shadow-lg);border-color:var(--bdr-r);transform:translateY(-1px)}
+.drow-blood{
+  width:42px;height:42px;border-radius:10px;flex-shrink:0;
+  background:var(--red);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Fira Code',monospace;font-size:.88rem;font-weight:700;
+  box-shadow:0 3px 10px var(--red-g);
+}
+.drow-info{flex:1;min-width:0}
+.drow-name{font-weight:700;font-size:.92rem;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drow-meta{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin-top:2px}
+.drow-tag{font-size:.72rem;color:var(--txt-m);display:flex;align-items:center;gap:3px}
+.drow-tag i{color:var(--red);opacity:.6;font-size:.7rem}
+.drow-actions{display:flex;gap:.4rem;flex-shrink:0}
+.drow-btn{
+  display:flex;align-items:center;gap:4px;
+  padding:5px 11px;border-radius:7px;border:1.5px solid var(--bdr);
+  background:transparent;color:var(--txt-m);cursor:pointer;
+  font-size:.76rem;font-family:'Noto Serif Bengali',serif;font-weight:600;
+  transition:all .15s;white-space:nowrap;
+}
+.drow-btn i{font-size:.74rem}
+.drow-btn-view{border-color:var(--bdr-r);color:var(--red)}
+.drow-btn-view:hover{background:var(--red);color:#fff;border-color:var(--red)}
+.drow-btn-ok{border-color:rgba(26,138,90,.3);color:var(--green)}
+.drow-btn-ok:hover{background:var(--green);color:#fff;border-color:var(--green)}
+.drow-btn-x{border-color:rgba(229,57,53,.2);color:#E53935}
+.drow-btn-x:hover{background:rgba(229,57,53,.1);border-color:#E53935}
+.drow-btn-del{border-color:rgba(229,57,53,.2);color:#E53935}
+.drow-btn-del:hover{background:#E53935;color:#fff;border-color:#E53935}
+.drow-pend-tag{
+  flex-shrink:0;
+  background:var(--amber-l);color:var(--amber);
+  border:1px solid rgba(181,112,10,.3);
+  border-radius:6px;padding:2px 7px;font-size:.66rem;font-weight:700;
+  white-space:nowrap;
+}
+#admin-list{display:flex;flex-direction:column;gap:.5rem;width:100%;overflow-x:hidden}
+
+/* ════════ DONOR VIEW MODAL ════════ */
+.view-modal-head{
+  display:flex;align-items:center;gap:1rem;
+  padding-bottom:1rem;margin-bottom:1rem;
+  border-bottom:1px solid var(--bdr);
+}
+.view-blood-big{
+  width:60px;height:60px;border-radius:14px;flex-shrink:0;
+  background:var(--red);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Fira Code',monospace;font-size:1.2rem;font-weight:700;
+  box-shadow:0 6px 18px var(--red-g);
+}
+.view-name{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--txt)}
+.view-loc{font-size:.82rem;color:var(--txt-m);margin-top:2px;display:flex;align-items:center;gap:4px}
+.view-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1rem}
+.view-field{background:var(--surf);border:1px solid var(--bdr);border-radius:9px;padding:.7rem .9rem}
+.view-field-label{font-size:.66rem;text-transform:uppercase;letter-spacing:.07em;color:var(--txt-d);font-weight:700;margin-bottom:.2rem}
+.view-field-val{font-size:.9rem;color:var(--txt);font-weight:600}
+.view-cd{background:var(--surf);border:1px solid var(--bdr);border-radius:9px;padding:.8rem 1rem;margin-bottom:1rem}
+.view-actions{display:flex;gap:.6rem;flex-wrap:wrap;padding-top:1rem;border-top:1px solid var(--bdr);margin-top:.5rem}
+.view-actions .btn-save{flex:1}
+.view-pend-notice{
+  background:var(--amber-l);border:1.5px solid rgba(181,112,10,.35);
+  border-radius:9px;padding:.75rem 1rem;margin-bottom:1rem;
+  font-size:.82rem;color:var(--amber);font-weight:600;
+  display:flex;align-items:center;gap:.5rem;
+}
+
+
+/* ════════ ADMIN LAYOUT — SIDEBAR ════════ */
+.admin-layout{
+  display:grid;
+  grid-template-columns:220px 1fr;
+  gap:0;
+  min-height:calc(100vh - 60px);
+  align-items:start;
+  overflow:hidden;
+  width:100%;
+}
+@media(max-width:700px){
+  .admin-layout{grid-template-columns:1fr}
+}
+
+/* SIDEBAR */
+.admin-sidebar{
+  background:var(--card);
+  border-right:1px solid var(--bdr);
+  border-radius:var(--r) 0 0 var(--r);
+  padding:1.2rem .8rem;
+  position:sticky;top:70px;
+  display:flex;flex-direction:column;gap:.3rem;
+  box-shadow:var(--shadow);
+  overflow:visible;
+}
+@media(max-width:700px){
+  .admin-sidebar{
+    position:static;flex-direction:row;flex-wrap:wrap;
+    border-radius:var(--r);border:1px solid var(--bdr);
+    margin-bottom:.8rem;padding:.6rem;gap:.4rem;
+    overflow:visible;
+  }
+  .sidebar-current-wrap{width:100%}
+  .sidebar-dropdown{top:calc(100% + 4px)!important;left:0!important;right:0!important}
+}
+.admin-sidebar-title{
+  font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--txt-d);font-weight:700;padding:.3rem .6rem;
+  margin-bottom:.2rem;
+}
+@media(max-width:700px){.admin-sidebar-title{display:none}}
+.snav{
+  display:flex;align-items:center;gap:.65rem;
+  padding:.6rem .9rem;border-radius:9px;
+  border:none;background:transparent;
+  color:var(--txt-m);cursor:pointer;width:100%;text-align:left;
+  font-family:'Noto Serif Bengali',serif;font-size:.84rem;font-weight:600;
+  transition:all .18s;position:relative;
+}
+@media(max-width:700px){.snav{width:auto;flex:1;justify-content:center}}
+.snav i{font-size:.9rem;width:18px;text-align:center;flex-shrink:0}
+.snav:hover{background:var(--red-l);color:var(--red)}
+.snav.active{background:var(--red);color:#fff;box-shadow:0 3px 12px var(--red-g)}
+.snav .snav-badge{
+  position:absolute;right:.6rem;top:50%;transform:translateY(-50%);
+  background:var(--amber);color:#fff;
+  font-size:.58rem;font-weight:800;min-width:18px;height:18px;
+  border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;
+  font-family:'Fira Code',monospace;
+}
+.snav.active .snav-badge{background:rgba(255,255,255,.3)}
+@media(max-width:700px){.snav .snav-badge{position:static;transform:none}}
+.snav-divider{height:1px;background:var(--bdr);margin:.4rem 0}
+@media(max-width:700px){.snav-divider{display:none}}
+
+/* ADMIN MAIN CONTENT */
+.admin-content{
+  padding:1.2rem;
+  background:var(--bg);
+  border-radius:0 var(--r) var(--r) 0;
+  min-height:500px;
+  min-width:0;
+  overflow-x:hidden;
+  width:100%;
+}
+@media(max-width:700px){.admin-content{padding:.8rem 0}}
+.admin-section{display:none}
+.admin-section.active{display:block}
+
+/* SECTION HEADER */
+.sec-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:1.2rem;flex-wrap:wrap;gap:.6rem;
+}
+.sec-title{
+  font-family:'Playfair Display',serif;
+  font-size:1.2rem;font-weight:700;color:var(--txt);
+  display:flex;align-items:center;gap:.5rem;
+}
+.sec-title i{color:var(--red);font-size:1rem}
+
+/* ════════ DASHBOARD ════════ */
+.dash-kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:.8rem;margin-bottom:1.4rem;
+}
+.kpi{
+  background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);
+  padding:1rem;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;gap:.3rem;
+  transition:transform .2s,box-shadow .2s;
+}
+.kpi:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.kpi-icon{
+  width:36px;height:36px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.95rem;margin-bottom:.2rem;
+}
+.kpi-n{font-family:'Fira Code',monospace;font-size:1.6rem;font-weight:700;color:var(--txt);line-height:1}
+.kpi-l{font-size:.7rem;color:var(--txt-d);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+
+/* CHART CARDS */
+.chart-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+  gap:1rem;margin-bottom:1rem;
+}
+.chart-card{
+  background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);
+  padding:1.1rem;box-shadow:var(--shadow);
+}
+.chart-card-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:.9rem;
+}
+.chart-card-title{font-size:.82rem;font-weight:700;color:var(--txt);display:flex;align-items:center;gap:.4rem}
+.chart-card-title i{color:var(--red);font-size:.8rem}
+.chart-filter{
+  padding:4px 8px;border:1px solid var(--bdr);border-radius:6px;
+  background:var(--surf);color:var(--txt-m);font-size:.72rem;cursor:pointer;
+  font-family:'Noto Serif Bengali',serif;
+}
+.chart-filter:focus{outline:none;border-color:var(--red)}
+canvas{width:100%!important;max-height:220px}
+
+/* DASH RECENT TABLE */
+.dash-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.dash-table th{
+  background:var(--surf);border-bottom:2px solid var(--bdr);
+  padding:.5rem .7rem;text-align:left;font-size:.68rem;
+  text-transform:uppercase;letter-spacing:.06em;color:var(--txt-d);font-weight:700;
+}
+.dash-table td{padding:.55rem .7rem;border-bottom:1px solid var(--bdr);color:var(--txt-m)}
+.dash-table tr:last-child td{border-bottom:none}
+.dash-table tr:hover td{background:var(--surf)}
+.dash-table .td-name{font-weight:700;color:var(--txt)}
+
+
+/* ════════ BKASH DONATION MODAL ════════ */
+.bkash-modal-box{
+  background:var(--card);border-radius:20px;
+  width:min(400px,95vw);padding:0;overflow:hidden;
+  box-shadow:var(--shadow-lg);
+  animation:popIn .3s cubic-bezier(.34,1.56,.64,1);
+}
+.bkash-hero{
+  background:linear-gradient(135deg,#E2136E 0%,#9B0049 100%);
+  padding:2rem 1.5rem 1.5rem;text-align:center;position:relative;overflow:hidden;
+}
+.bkash-hero::before{
+  content:'';position:absolute;top:-40px;right:-40px;
+  width:160px;height:160px;border-radius:50%;
+  background:rgba(255,255,255,.07);
+}
+.bkash-logo-wrap{
+  width:72px;height:72px;border-radius:18px;
+  background:#fff;margin:0 auto .8rem;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 24px rgba(0,0,0,.2);
+}
+.bkash-logo-wrap img{width:48px;height:48px;object-fit:contain}
+.bkash-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:#fff;margin-bottom:.2rem}
+.bkash-sub{font-size:.82rem;color:rgba(255,255,255,.8)}
+.bkash-body{padding:1.5rem}
+.bkash-number-box{
+  background:linear-gradient(135deg,var(--red-l),var(--surf));
+  border:2px dashed rgba(226,19,110,.3);border-radius:12px;
+  padding:1rem 1.2rem;margin-bottom:1rem;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.bkash-num-label{font-size:.7rem;color:var(--txt-d);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem}
+.bkash-num{font-family:'Fira Code',monospace;font-size:1.3rem;font-weight:700;color:#E2136E;letter-spacing:.05em}
+.bkash-copy-btn{
+  padding:6px 14px;border-radius:7px;border:none;
+  background:#E2136E;color:#fff;cursor:pointer;font-size:.78rem;
+  font-family:'Noto Serif Bengali',serif;font-weight:600;
+  transition:all .18s;display:flex;align-items:center;gap:5px;
+  flex-shrink:0;
+}
+.bkash-copy-btn:hover{background:#9B0049;transform:scale(1.04)}
+.bkash-steps{display:flex;flex-direction:column;gap:.55rem;margin-bottom:1.2rem}
+.bkash-step{
+  display:flex;align-items:flex-start;gap:.7rem;
+  font-size:.82rem;color:var(--txt-m);
+}
+.bkash-step-num{
+  width:22px;height:22px;border-radius:50%;flex-shrink:0;
+  background:#E2136E;color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.68rem;font-weight:800;font-family:'Fira Code',monospace;
+  margin-top:1px;
+}
+.bkash-note{
+  background:rgba(226,19,110,.06);border:1px solid rgba(226,19,110,.15);
+  border-radius:9px;padding:.7rem .9rem;
+  font-size:.78rem;color:var(--txt-m);margin-bottom:1rem;
+  display:flex;align-items:flex-start;gap:.5rem;
+}
+.bkash-note i{color:#E2136E;flex-shrink:0;margin-top:2px}
+/* bKash nav button */
+.hbtn-bkash{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:8px;
+  background:linear-gradient(135deg,#E2136E,#9B0049);
+  color:#fff;border:none;cursor:pointer;
+  font-family:'Noto Serif Bengali',serif;font-size:.82rem;font-weight:600;
+  transition:all .2s;box-shadow:0 3px 12px rgba(226,19,110,.3);
+}
+.hbtn-bkash:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(226,19,110,.4)}
+.hbtn-bkash i{font-size:.85rem}
+
+/* ════════ APPROVE LOADING STATE ════════ */
+.drow-btn[data-loading="true"]{
+  opacity:.6;cursor:not-allowed;pointer-events:none;
+}
+.drow-btn[data-loading="true"] i{animation:spin .8s linear infinite}
+
+/* ════════ MOBILE ADMIN IMPROVEMENTS ════════ */
+@media(max-width:700px){
+  .admin-wrap{padding:0 .4rem}
+  .admin-bar{
+    flex-direction:column;align-items:stretch;gap:.7rem;
+    padding:.9rem;border-radius:var(--r)!important;
+    margin-bottom:.6rem!important;
+  }
+  .admin-bar-left{gap:.7rem}
+  .admin-stats{
+    display:grid!important;grid-template-columns:repeat(2,1fr);gap:.4rem;
+    width:100%;
+  }
+  .astat{padding:.5rem .6rem;border-radius:9px}
+  .admin-bar > div:last-child{
+    display:flex;gap:.5rem;
+    justify-content:stretch;
+  }
+  .admin-bar > div:last-child button{flex:1;justify-content:center}
+  .btn-add-donor,.btn-logout{font-size:.8rem;padding:8px 10px}
+  /* sidebar → three-dot menu on mobile */
+  .admin-sidebar{
+    border-radius:12px!important;
+    padding:.6rem!important;gap:.4rem!important;
+    overflow:visible!important;
+  }
+  .admin-content{padding:.5rem 0!important}
+  .sec-head{flex-direction:column;align-items:flex-start;gap:.5rem}
+  .dash-kpi-grid{grid-template-columns:repeat(2,1fr)!important;gap:.6rem}
+  .kpi{padding:.75rem}
+  .kpi-n{font-size:1.3rem}
+  .chart-grid{grid-template-columns:1fr!important}
+  .dash-table th,.dash-table td{padding:.4rem .5rem;font-size:.74rem}
+  .view-grid{grid-template-columns:1fr 1fr}
+  .view-modal-head{flex-direction:column;text-align:center;gap:.6rem}
+  .view-blood-big{margin:0 auto}
+  .view-actions{flex-wrap:wrap}
+  .view-actions button{flex:1;min-width:120px;font-size:.78rem;padding:.55rem .8rem}
+  .drow{padding:.6rem .7rem;gap:.55rem}
+  .drow-blood{width:36px;height:36px;border-radius:8px;font-size:.78rem}
+  .drow-name{font-size:.84rem}
+  .drow-actions{gap:.3rem}
+  .drow-btn{padding:5px 8px;font-size:.72rem}
+  /* admin filter */
+  .admin-filter{flex-direction:column;gap:.4rem}
+  .admin-search-wrap{min-width:unset}
+  .asort{width:100%}
+}
+@media(max-width:480px){
+  .stats-wrap{grid-template-columns:repeat(2,1fr)!important}
+  header{padding:0 .8rem}
+  .logo-name{font-size:1rem}
+  .hbtn .btn-text{display:none}
+  .hbtn-bkash .bkash-btn-text{display:none}
+}
+
+/* ════════ FIREBASE STATUS ════════ */
+.fb-chip{
+  position:fixed;top:70px;right:12px;z-index:70;
+  background:var(--card);border:1px solid var(--bdr);border-radius:20px;
+  padding:4px 10px;font-size:.7rem;display:flex;align-items:center;gap:5px;
+  box-shadow:var(--shadow);color:var(--txt-m);
+  animation:fadeIn .5s ease 1.5s both;
+}
+.fb-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:heartbeat 2s ease-in-out infinite}
+.fb-dot.off{background:var(--red)}
+
+@media(max-width:480px){
+  .stats-wrap{grid-template-columns:repeat(2,1fr)}
+  .admin-bar{flex-direction:column;align-items:flex-start}
+  .header-right .hbtn .btn-text{display:none}
+  .fg2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="cover">
+  <div class="loader-wrap">
+    <div class="loader-ring"></div>
+    <div class="loader-icon"><i class="fa-solid fa-droplet"></i></div>
+  </div>
+  <div class="cover-txt">রক্তবন্ধন লোড হচ্ছে...</div>
+  <div class="cover-sub"></div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <a class="logo" href="#">
+    <div class="logo-icon"><i class="fa-solid fa-droplet"></i></div>
+    <div class="logo-name">রক্ত<span>বন্ধন</span></div>
+  </a>
+  <div class="header-right">
+    <button class="hbtn theme-btn" onclick="toggleTheme()" title="থিম পরিবর্তন">
+      <i class="fa-solid fa-circle-half-stroke" id="theme-icon"></i>
+    </button>
+    <button class="hbtn-bkash" onclick="openM('m-bkash')" title="বিকাশে সহায়তা করুন">
+      <i class="fa-solid fa-hand-holding-heart"></i><span class="bkash-btn-text">সহায়তা করুন</span>
+    </button>
+    <button class="hbtn" id="nav-d" onclick="showPage('donors',this)">
+      <i class="fa-solid fa-users"></i><span class="btn-text">ডোনার</span>
+    </button>
+    <button class="hbtn" id="nav-a" onclick="showPage('admin',this)">
+      <i class="fa-solid fa-shield-halved"></i><span class="btn-text">অ্যাডমিন</span>
+      <span id="abadge" style="display:none;background:var(--green);color:#fff;font-size:.58rem;padding:1px 5px;border-radius:5px;font-weight:800">●</span>
+      <span id="pend-badge" style="display:none;background:var(--amber);color:#fff;font-size:.58rem;padding:1px 6px;border-radius:5px;font-weight:800;margin-left:1px"></span>
+    </button>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero" id="hero-section">
+  <div class="hero-badge"><i class="fa-solid fa-heart-pulse"></i> রক্তদান নেটওয়ার্ক</div>
+  <h1>রক্ত দিন,<br><span>জীবন বাঁচান</span></h1>
+  <p class="hero-sub">বাংলাদেশের সর্ববৃহৎ রক্তদাতা নেটওয়ার্কে আপনাকে স্বাগতম। সঠিক সময়ে সঠিক রক্ত খুঁজে নিন।</p>
+  <div class="stats-wrap" style="grid-template-columns:repeat(3,1fr);max-width:700px">
+    <div class="stat-box"><span class="stat-n" id="st-t">—</span><span class="stat-l"><i class="fa-solid fa-users fa-xs"></i> মোট ডোনার</span></div>
+    <div class="stat-box"><span class="stat-n" id="st-r" style="color:var(--green)">—</span><span class="stat-l"><i class="fa-solid fa-circle-check fa-xs"></i> উপলব্ধ</span></div>
+    <div class="stat-box"><span class="stat-n" id="st-g">—</span><span class="stat-l"><i class="fa-solid fa-vials fa-xs"></i> রক্তের গ্রুপ</span></div>
+    <div class="stat-box"><span class="stat-n" id="st-don" style="color:var(--red)">—</span><span class="stat-l"><i class="fa-solid fa-droplet fa-xs"></i> মোট দান</span></div>
+    <div class="stat-box"><span class="stat-n" id="st-w" style="color:var(--amber)">—</span><span class="stat-l"><i class="fa-solid fa-clock fa-xs"></i> অপেক্ষমাণ</span></div>
+    <div class="stat-box"><span class="stat-n" id="st-vis" style="color:var(--blue)">—</span><span class="stat-l"><i class="fa-solid fa-eye fa-xs"></i> ভিজিটর</span></div>
+  </div>
+</div>
+
+<main>
+  <!-- DONORS PAGE -->
+  <div id="pg-donors">
+    <div class="filter-bar">
+      <div class="search-row">
+        <i class="fa-solid fa-magnifying-glass si"></i>
+        <input id="srch" placeholder="নাম বা জেলা দিয়ে খুঁজুন..." oninput="debouncedRenderCards()"/>
+      </div>
+      <div class="blood-chips">
+        <button class="chip on" data-g="all" onclick="setF(this)">সব</button>
+        <button class="chip" data-g="A+" onclick="setF(this)">A+</button>
+        <button class="chip" data-g="A-" onclick="setF(this)">A−</button>
+        <button class="chip" data-g="B+" onclick="setF(this)">B+</button>
+        <button class="chip" data-g="B-" onclick="setF(this)">B−</button>
+        <button class="chip" data-g="AB+" onclick="setF(this)">AB+</button>
+        <button class="chip" data-g="AB-" onclick="setF(this)">AB−</button>
+        <button class="chip" data-g="O+" onclick="setF(this)">O+</button>
+        <button class="chip" data-g="O-" onclick="setF(this)">O−</button>
+      </div>
+    </div>
+    <div id="grid">
+      <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><h3>লোড হচ্ছে...</h3><p>Firebase থেকে ডেটা আনা হচ্ছে</p></div>
+    </div>
+  </div>
+
+  <!-- ADMIN PAGE -->
+  <div id="pg-admin" class="admin-wrap">
+
+    <!-- TOP BAR -->
+    <div class="admin-bar" style="border-radius:var(--r);margin-bottom:.8rem">
+      <div class="admin-bar-left">
+        <div class="admin-avatar"><i class="fa-solid fa-shield-halved"></i></div>
+        <div>
+          <div class="admin-bar-title">অ্যাডমিন প্যানেল <span class="admin-tag">ADMIN</span></div>
+          <div class="admin-bar-sub" id="admin-email-show">লোড হচ্ছে...</div>
+        </div>
+      </div>
+      <div class="admin-stats">
+        <div class="astat"><i class="fa-solid fa-users" style="color:var(--txt-m)"></i><span class="astat-n" id="as-t">0</span><span class="astat-l">মোট</span></div>
+        <div class="astat"><i class="fa-solid fa-circle-check" style="color:var(--green)"></i><span class="astat-n" id="as-r" style="color:var(--green)">0</span><span class="astat-l">উপলব্ধ</span></div>
+        <div class="astat"><i class="fa-solid fa-droplet" style="color:var(--red)"></i><span class="astat-n" id="as-f" style="color:var(--red)">0</span><span class="astat-l">সদ্য দান</span></div>
+        <div class="astat astat-pend"><i class="fa-solid fa-hourglass-half" style="color:var(--amber)"></i><span class="astat-n" id="as-p">0</span><span class="astat-l">পেন্ডিং</span></div>
+      </div>
+      <div style="display:flex;gap:.6rem;align-items:center">
+        <button class="btn-add-donor" onclick="openAdd()"><i class="fa-solid fa-plus"></i> নতুন ডোনার</button>
+        <button class="btn-logout" onclick="doLogout()"><i class="fa-solid fa-right-from-bracket"></i> লগআউট</button>
+      </div>
+    </div>
+
+    <!-- LAYOUT: SIDEBAR + CONTENT -->
+    <div class="admin-layout">
+
+      <!-- SIDEBAR NAV -->
+      <div class="admin-sidebar">
+        <div class="admin-sidebar-title">মেনু</div>
+        <!-- Current active section label + 3-dot button -->
+        <div class="sidebar-current-wrap" style="display:flex;align-items:center;justify-content:space-between;padding:.4rem .5rem .2rem;width:100%">
+          <span class="sidebar-active-label" id="sidebar-active-label" style="font-size:.78rem;font-weight:700;color:var(--txt);display:flex;align-items:center;gap:.5rem">
+            <i class="fa-solid fa-chart-line" style="color:var(--red)"></i> ড্যাশবোর্ড
+          </span>
+          <button class="sidebar-threedot-btn" id="sidebar-threedot-btn" onclick="toggleSidebarMenu()" title="মেনু খুলুন"
+            style="width:34px;height:34px;border-radius:8px;border:1.5px solid var(--bdr);background:transparent;color:var(--txt-m);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.05rem;transition:all .18s;flex-shrink:0">
+            <i class="fa-solid fa-ellipsis-vertical"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- MAIN CONTENT -->
+      <div class="admin-content">
+
+        <!-- ── DASHBOARD ── -->
+        <div class="admin-section active" id="sec-dash">
+          <div class="sec-head">
+            <div class="sec-title"><i class="fa-solid fa-chart-line"></i> ড্যাশবোর্ড</div>
+            <select class="chart-filter" id="dash-month" onchange="renderDashboard()">
+              <option value="0.033">আজ (১ দিন)</option>
+              <option value="0.23">এই সপ্তাহ (৭ দিন)</option>
+              <option value="1" selected>এই মাস</option>
+              <option value="3">গত ৩ মাস</option>
+              <option value="6">গত ৬ মাস</option>
+              <option value="12">গত ১ বছর</option>
+              <option value="24">গত ২ বছর</option>
+              <option value="60">গত ৫ বছর</option>
+              <option value="120">গত ১০ বছর</option>
+            </select>
+          </div>
+          <!-- KPI row -->
+          <div class="dash-kpi-grid">
+            <div class="kpi">
+              <div class="kpi-icon" style="background:var(--red-l);color:var(--red)"><i class="fa-solid fa-users"></i></div>
+              <div class="kpi-n" id="kpi-total">—</div><div class="kpi-l">মোট ডোনার</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-icon" style="background:var(--green-l);color:var(--green)"><i class="fa-solid fa-circle-check"></i></div>
+              <div class="kpi-n" id="kpi-ready" style="color:var(--green)">—</div><div class="kpi-l">এখনই উপলব্ধ</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-icon" style="background:var(--amber-l);color:var(--amber)"><i class="fa-solid fa-hourglass-half"></i></div>
+              <div class="kpi-n" id="kpi-pend" style="color:var(--amber)">—</div><div class="kpi-l">পেন্ডিং</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-icon" style="background:rgba(21,101,192,.1);color:var(--blue)"><i class="fa-solid fa-droplet"></i></div>
+              <div class="kpi-n" id="kpi-don" style="color:var(--blue)">—</div><div class="kpi-l">মোট দান</div>
+            </div>
+          </div>
+          <!-- Charts row -->
+          <div class="chart-grid">
+            <div class="chart-card">
+              <div class="chart-card-head">
+                <div class="chart-card-title"><i class="fa-solid fa-chart-bar"></i> রক্তের গ্রুপ বিতরণ</div>
+              </div>
+              <canvas id="chart-blood"></canvas>
+            </div>
+            <div class="chart-card">
+              <div class="chart-card-head">
+                <div class="chart-card-title"><i class="fa-solid fa-chart-pie"></i> স্ট্যাটাস বিতরণ</div>
+              </div>
+              <canvas id="chart-status"></canvas>
+            </div>
+            <div class="chart-card" style="grid-column:1/-1">
+              <div class="chart-card-head">
+                <div class="chart-card-title"><i class="fa-solid fa-chart-line"></i> নিবন্ধন ট্রেন্ড (সময় অনুযায়ী)</div>
+              </div>
+              <canvas id="chart-trend" style="max-height:200px"></canvas>
+            </div>
+            <div class="chart-card" style="grid-column:1/-1">
+              <div class="chart-card-head">
+                <div class="chart-card-title"><i class="fa-solid fa-droplet"></i> মোট রক্তদান ট্রেন্ড (সময় অনুযায়ী)</div>
+              </div>
+              <canvas id="chart-donations" style="max-height:200px"></canvas>
+            </div>
+          </div>
+          <!-- Recent donations table -->
+          <div class="chart-card">
+            <div class="chart-card-head">
+              <div class="chart-card-title"><i class="fa-solid fa-clock-rotate-left"></i> সাম্প্রতিক রক্তদান</div>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="dash-table" id="dash-recent">
+                <thead><tr><th>ডোনার</th><th>রক্ত</th><th>জেলা</th><th>শেষ দান</th><th>মোট দান</th></tr></thead>
+                <tbody id="dash-recent-body"><tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--txt-d)">লোড হচ্ছে...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PENDING ── -->
+        <div class="admin-section" id="sec-pending">
+          <div class="sec-head">
+            <div class="sec-title"><i class="fa-solid fa-hourglass-half"></i> পেন্ডিং অনুরোধ</div>
+          </div>
+          <div class="admin-filter">
+            <div class="admin-search-wrap">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input class="admin-search" id="pend-srch" placeholder="নাম বা জেলা..." oninput="renderSection('pending')"/>
+            </div>
+            <select class="asort" id="pend-blood" onchange="renderSection('pending')">
+              <option value="all">সব গ্রুপ</option>
+              <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+              <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+            </select>
+          </div>
+          <div id="list-pending"></div>
+        </div>
+
+        <!-- ── DONORS ── -->
+        <div class="admin-section" id="sec-donors">
+          <div class="sec-head">
+            <div class="sec-title"><i class="fa-solid fa-users"></i> সকল ডোনার</div>
+          </div>
+          <div class="admin-filter">
+            <div class="admin-search-wrap">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input class="admin-search" id="don-srch" placeholder="নাম, জেলা বা ফোন..." oninput="renderSection('donors')"/>
+            </div>
+            <select class="asort" id="don-blood" onchange="renderSection('donors')">
+              <option value="all">সব গ্রুপ</option>
+              <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+              <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+            </select>
+            <select class="asort" id="don-sort" onchange="renderSection('donors')">
+              <option value="name">নাম অনুযায়ী</option>
+              <option value="blood">গ্রুপ অনুযায়ী</option>
+              <option value="date">তারিখ অনুযায়ী</option>
+              <option value="exp">অভিজ্ঞতা অনুযায়ী</option>
+            </select>
+          </div>
+          <div id="list-donors"></div>
+        </div>
+
+        <!-- ── AVAILABLE ── -->
+        <div class="admin-section" id="sec-available">
+          <div class="sec-head">
+            <div class="sec-title"><i class="fa-solid fa-circle-check"></i> এখনই উপলব্ধ ডোনার</div>
+          </div>
+          <div class="admin-filter">
+            <div class="admin-search-wrap">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input class="admin-search" id="avl-srch" placeholder="নাম বা জেলা..." oninput="renderSection('available')"/>
+            </div>
+            <select class="asort" id="avl-blood" onchange="renderSection('available')">
+              <option value="all">সব গ্রুপ</option>
+              <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+              <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+            </select>
+          </div>
+          <div id="list-available"></div>
+        </div>
+
+        <!-- ── COOLDOWN ── -->
+        <div class="admin-section" id="sec-cooldown">
+          <div class="sec-head">
+            <div class="sec-title"><i class="fa-solid fa-clock"></i> কুলডাউনে আছেন</div>
+          </div>
+          <div class="admin-filter">
+            <div class="admin-search-wrap">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input class="admin-search" id="cd-srch" placeholder="নাম বা জেলা..." oninput="renderSection('cooldown')"/>
+            </div>
+            <select class="asort" id="cd-blood" onchange="renderSection('cooldown')">
+              <option value="all">সব গ্রুপ</option>
+              <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+              <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+            </select>
+          </div>
+          <div id="list-cooldown"></div>
+        </div>
+
+        <!-- ── BLOOD REQUESTS ── -->
+        <div class="admin-section" id="sec-requests">
+          <div class="sec-head">
+            <div class="sec-title"><i class="fa-solid fa-hand-holding-medical"></i> রক্তের আবেদন</div>
+          </div>
+          <div class="req-filter-bar">
+            <div class="req-filter-item">
+              <i class="fa-solid fa-calendar-day req-filter-icon"></i>
+              <input type="date" id="req-date-from" onchange="renderSection('requests')" title="তারিখ নির্বাচন করুন"/>
+            </div>
+            <div class="req-filter-divider"></div>
+            <div class="req-filter-item">
+              <i class="fa-solid fa-sliders req-filter-icon"></i>
+              <select id="req-status-filter" onchange="renderSection('requests')">
+                <option value="all">সব স্ট্যাটাস</option>
+                <option value="pending">⏳ অপেক্ষমাণ</option>
+                <option value="accepted">✓ একসেপ্ট</option>
+                <option value="donated">✅ দান সম্পন্ন</option>
+                <option value="rejected">✗ বাতিল</option>
+              </select>
+            </div>
+          </div>
+          <div id="list-requests">
+            <div style="text-align:center;padding:3rem;color:var(--txt-d)">
+              <i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem;display:block;margin-bottom:.6rem"></i>লোড হচ্ছে...
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /admin-content -->
+    </div><!-- /admin-layout -->
+  </div>
+</main>
+
+<!-- FAB (all users — new donors go pending) -->
+<button class="fab" id="fab" onclick="openAdd()"><i class="fa-solid fa-plus"></i></button>
+<div class="fab-label">ডোনার যোগ করুন</div>
+
+<!-- Firebase Status -->
+<div class="fb-chip"><div class="fb-dot off" id="fb-dot"></div><span id="fb-txt">সংযোগ হচ্ছে...</span></div>
+
+<!-- ─── MODALS ─── -->
+
+<!-- BLOOD REQUEST MODAL -->
+<div class="overlay" id="m-request">
+  <div class="modal" style="max-width:460px" id="modal-request">
+    <div class="modal-handle-wrap" id="mh-request"><div class="modal-handle"></div></div>
+    <div class="slide-hint"><i class="fa-solid fa-chevron-down"></i> নিচে স্লাইড করে বন্ধ করুন</div>
+    <div class="modal-head"><i class="fa-solid fa-hand-holding-medical" style="color:var(--green)"></i> রক্তের আবেদন করুন</div>
+    <div class="modal-scroll">
+      <input type="hidden" id="req-donor-id"/>
+      <div class="req-donor-info" id="req-donor-info" style="margin-bottom:1rem">লোড হচ্ছে...</div>
+      <div class="form-stack">
+        <div class="fg"><label><i class="fa-solid fa-user fa-xs"></i> আবেদনকারীর নাম *</label><input id="req-name" placeholder="আপনার নাম লিখুন"/></div>
+        <div class="fg"><label><i class="fa-solid fa-phone fa-xs"></i> ফোন নম্বর *</label><input id="req-phone" type="tel" placeholder="০১XXXXXXXXX"/></div>
+        <div class="fg"><label><i class="fa-solid fa-location-dot fa-xs"></i> হাসপাতাল / অবস্থান *</label><input id="req-location" placeholder="যেমন: ঢাকা মেডিকেল কলেজ হাসপাতাল"/></div>
+        <div class="fg"><label><i class="fa-solid fa-notes-medical fa-xs"></i> বার্তা / বিস্তারিত</label><textarea id="req-msg" rows="2" placeholder="রোগীর অবস্থা (ঐচ্ছিক)"></textarea></div>
+      </div>
+      <p style="font-size:.73rem;color:var(--txt-d);margin-top:.8rem;line-height:1.6"><i class="fa-solid fa-circle-info fa-xs"></i> আবেদন পাঠানোর পর অ্যাডমিন যাচাই করে ডোনারের সাথে যোগাযোগ করবেন।</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeM('m-request')"><i class="fa-solid fa-xmark"></i> বাতিল</button>
+      <button class="btn-save" id="req-save-btn" onclick="submitRequest()" style="background:var(--green);box-shadow:0 3px 14px rgba(26,138,90,.3)"><i class="fa-solid fa-paper-plane"></i> আবেদন পাঠান</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT DONOR -->
+<div class="overlay" id="m-donor">
+  <div class="modal" id="modal-donor">
+    <div class="modal-handle-wrap" id="mh-donor"><div class="modal-handle"></div></div>
+    <div class="slide-hint"><i class="fa-solid fa-chevron-down"></i> নিচে স্লাইড করে বন্ধ করুন</div>
+    <div class="modal-head" id="m-title"><i class="fa-solid fa-droplet"></i> নতুন ডোনার যোগ করুন</div>
+    <div class="modal-scroll">
+      <input type="hidden" id="eid"/>
+      <div class="form-stack">
+        <div class="fg"><label><i class="fa-solid fa-user fa-xs"></i> পূর্ণ নাম *</label><input id="fn" placeholder="ডোনারের পূর্ণ নাম"/></div>
+        <div class="fg2">
+          <div class="fg"><label><i class="fa-solid fa-vial fa-xs"></i> রক্তের গ্রুপ *</label>
+            <select id="fg-b"><option value="">-- নির্বাচন করুন --</option>
+              <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+              <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+            </select>
+          </div>
+          <div class="fg"><label><i class="fa-solid fa-weight-scale fa-xs"></i> ওজন (কেজি) *</label><input id="fw" type="number" min="45" max="200" placeholder="৪৫–২০০"/></div>
+        </div>
+        <div class="fg2">
+          <div class="fg">
+            <label><i class="fa-solid fa-cake-candles fa-xs"></i> জন্ম তারিখ *</label>
+            <input id="fdob" type="date" onchange="calcAge(this.value)" max=""/>
+            <small id="age-show"><i class="fa-solid fa-circle-info fa-xs"></i> বয়স স্বয়ংক্রিয়ভাবে হিসাব হবে</small>
+          </div>
+          <div class="fg"><label><i class="fa-solid fa-calendar fa-xs"></i> বয়স</label><input id="fa" type="number" placeholder="—" readonly style="background:var(--surf);cursor:not-allowed;opacity:.7"/></div>
+        </div>
+        <div class="fg"><label><i class="fa-solid fa-phone fa-xs"></i> ফোন নম্বর *</label><input id="fp" placeholder="০১XXXXXXXXX"/></div>
+        <div class="fg2">
+          <div class="fg"><label><i class="fa-solid fa-location-dot fa-xs"></i> জেলা *</label><input id="fd" placeholder="যেমন: ঢাকা"/></div>
+          <div class="fg"><label><i class="fa-solid fa-map-pin fa-xs"></i> এলাকা</label><input id="fad" placeholder="থানা / এলাকা"/></div>
+        </div>
+        <div class="fg"><label><i class="fa-solid fa-calendar-days fa-xs"></i> শেষ রক্তদানের তারিখ</label><input id="fld" type="date"/><small><i class="fa-solid fa-circle-info fa-xs"></i> এই তারিখ থেকে ৯০ দিন পর পুনরায় দান করা যাবে</small></div>
+        <div class="fg">
+          <label><i class="fa-solid fa-award fa-xs"></i> মোট রক্তদান সংখ্যা</label>
+          <div class="exp-counter">
+            <button type="button" class="exp-btn" onclick="changeExp(-1)"><i class="fa-solid fa-minus"></i></button>
+            <input class="exp-val" id="fexp" type="number" min="0" max="999" value="0" oninput="clampExp(this)"/>
+            <button type="button" class="exp-btn" onclick="changeExp(1)"><i class="fa-solid fa-plus"></i></button>
+          </div>
+          <small id="exp-hint"><i class="fa-solid fa-star fa-xs"></i> নতুন ডোনার = ০, অভিজ্ঞ ডোনার = মোট দানের সংখ্যা</small>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeM('m-donor')"><i class="fa-solid fa-xmark"></i> বাতিল</button>
+      <button class="btn-save" id="bsave" onclick="saveDonor()"><i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ করুন</button>
+    </div>
+  </div>
+</div>
+
+<!-- RECORD DONATION -->
+<div class="overlay" id="m-don">
+  <div class="modal" style="max-width:420px" id="modal-don">
+    <div class="modal-handle-wrap" id="mh-don"><div class="modal-handle"></div></div>
+    <div class="slide-hint"><i class="fa-solid fa-chevron-down"></i> নিচে স্লাইড করে বন্ধ করুন</div>
+    <div class="modal-head"><i class="fa-solid fa-droplet"></i> রক্তদান রেকর্ড করুন</div>
+    <div class="modal-scroll">
+      <input type="hidden" id="rd-id"/>
+      <div class="donate-info" id="rd-info" style="margin-bottom:1rem"></div>
+      <div class="fg"><label><i class="fa-solid fa-calendar-check fa-xs"></i> দানের তারিখ *</label><input id="rd-date" type="date"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeM('m-don')"><i class="fa-solid fa-xmark"></i> বাতিল</button>
+      <button class="btn-save" onclick="recordDon()"><i class="fa-solid fa-check"></i> নিশ্চিত করুন</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="overlay" id="m-login" style="align-items:center">
+  <div class="login-box">
+    <div class="login-icon"><i class="fa-solid fa-shield-halved"></i></div>
+    <h2>অ্যাডমিন লগইন</h2>
+    <p>শুধুমাত্র অনুমোদিত ইমেইল ও পাসওয়ার্ড দিয়ে প্রবেশ করুন</p>
+    <div class="form-stack">
+      <div class="fg"><label><i class="fa-solid fa-envelope fa-xs"></i> ইমেইল অ্যাড্রেস</label><input id="lemail" type="email" placeholder="admin@example.com"/></div>
+      <div class="fg"><label><i class="fa-solid fa-lock fa-xs"></i> পাসওয়ার্ড</label><input id="lpw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    </div>
+    <div class="login-err" id="lerr"></div>
+    <div style="display:flex;flex-direction:column;gap:.6rem;margin-top:1.2rem">
+      <button class="btn-save" style="flex:none;width:100%" onclick="doLogin()"><i class="fa-solid fa-right-to-bracket"></i> লগইন করুন</button>
+      <button class="btn-cancel" style="width:100%;text-align:center;flex:none" onclick="cancelLogin()"><i class="fa-solid fa-xmark"></i> বাতিল</button>
+    </div>
+  </div>
+</div>
+
+<!-- DONOR VIEW MODAL -->
+<div class="overlay" id="m-view">
+  <div class="modal" style="max-width:520px" id="modal-view">
+    <div class="modal-handle-wrap" id="mh-view"><div class="modal-handle"></div></div>
+    <div class="slide-hint"><i class="fa-solid fa-chevron-down"></i> নিচে স্লাইড করে বন্ধ করুন</div>
+    <div class="modal-scroll" id="m-view-body"></div>
+  </div>
+</div>
+
+<!-- INVOICE MODAL -->
+<div class="overlay" id="m-invoice">
+  <div class="modal" style="max-width:480px" id="modal-invoice">
+    <div class="modal-handle-wrap" id="mh-invoice"><div class="modal-handle"></div></div>
+    <div class="slide-hint"><i class="fa-solid fa-chevron-down"></i> নিচে স্লাইড করে বন্ধ করুন</div>
+    <div class="modal-head"><i class="fa-solid fa-file-invoice"></i> রক্তদান ইনভয়েস</div>
+    <div class="modal-scroll">
+      <div id="invoice-body"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeM('m-invoice')"><i class="fa-solid fa-xmark"></i> বন্ধ করুন</button>
+      <button class="btn-save" onclick="printInvoice()" style="background:var(--green);box-shadow:0 3px 14px rgba(26,138,90,.3)"><i class="fa-solid fa-print"></i> প্রিন্ট করুন</button>
+    </div>
+  </div>
+</div>
+
+<!-- BKASH DONATION MODAL -->
+<div class="overlay" id="m-bkash" style="align-items:center">
+  <div class="bkash-modal-box">
+    <div class="bkash-hero">
+      <div class="bkash-logo-wrap">
+        <svg viewBox="0 0 100 100" width="48" height="48">
+          <circle cx="50" cy="50" r="50" fill="#E2136E"/>
+          <text x="50" y="67" font-family="Arial" font-size="42" font-weight="900" fill="white" text-anchor="middle">b</text>
+        </svg>
+      </div>
+      <div class="bkash-title">বিকাশে সাহায্য করুন। (সাহায্য বর্তমানে বন্ধ আছে)</div>
+      <div class="bkash-sub">আপনার ছোট্ট সহায়তা একজনের জীবন বাঁচাতে পারে</div>
+    </div>
+    <div class="bkash-body">
+      <div class="bkash-number-box">
+        <div>
+          <div class="bkash-num-label"><i class="fa-solid fa-mobile-screen fa-xs"></i> বিকাশ নম্বর</div>
+          <div class="bkash-num" id="bkash-display-num">01XXXXXXXXX</div>
+        </div>
+        <button class="bkash-copy-btn" onclick="copyBkash()"><i class="fa-solid fa-copy fa-xs" id="bkash-copy-icon"></i> কপি করুন</button>
+      </div>
+      <div class="bkash-steps">
+        <div class="bkash-step"><div class="bkash-step-num">১</div><span>বিকাশ অ্যাপ বা ডায়াল *247# খুলুন</span></div>
+        <div class="bkash-step"><div class="bkash-step-num">২</div><span><strong>Send Money</strong> অথবা <strong>পেমেন্ট</strong> সিলেক্ট করুন</span></div>
+        <div class="bkash-step"><div class="bkash-step-num">৩</div><span>উপরের নম্বরে পরিমাণ পাঠান ও রেফারেন্স: <strong>রক্তবন্ধন</strong></span></div>
+        <div class="bkash-step"><div class="bkash-step-num">৪</div><span>পিন দিয়ে কনফার্ম করুন — ধন্যবাদ! ❤️</span></div>
+      </div>
+      <div class="bkash-note"><i class="fa-solid fa-circle-info"></i><span>আপনার সহায়তা সম্পূর্ণ স্বেচ্ছামূলক।</span></div>
+      <button class="btn-cancel" style="width:100%;text-align:center;flex:none;margin-top:.5rem" onclick="closeM('m-bkash')"><i class="fa-solid fa-xmark"></i> বন্ধ করুন</button>
+    </div>
+  </div>
+</div>
+
+<!-- SIDEBAR DROPDOWN PORTAL (fixed position, outside layout) -->
+<div id="sidebar-dropdown" style="display:none;position:fixed;z-index:9000;
+     background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;
+     box-shadow:0 8px 32px rgba(0,0,0,.18);padding:.5rem;min-width:210px;
+     animation:popIn .18s ease">
+  <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:.09em;color:var(--txt-d);font-weight:700;padding:.3rem .6rem .5rem">
+    <i class="fa-solid fa-bars fa-xs"></i> মেনু
+  </div>
+  <button class="snav active" id="snav-dash" onclick="chooseSidebarItem('dash',this,'fa-chart-line','ড্যাশবোর্ড')">
+    <i class="fa-solid fa-chart-line"></i> <span>ড্যাশবোর্ড</span>
+  </button>
+  <button class="snav" id="snav-pending-btn" onclick="chooseSidebarItem('pending',this,'fa-hourglass-half','পেন্ডিং')">
+    <i class="fa-solid fa-hourglass-half"></i> <span>পেন্ডিং</span>
+    <span class="snav-badge" id="snav-pend-cnt" style="display:none">0</span>
+  </button>
+  <button class="snav" id="snav-requests-btn" onclick="chooseSidebarItem('requests',this,'fa-hand-holding-medical','রক্তের আবেদন')">
+    <i class="fa-solid fa-hand-holding-medical"></i> <span>রক্তের আবেদন</span>
+    <span class="snav-badge" id="snav-req-cnt" style="display:none;background:var(--green)">0</span>
+  </button>
+  <button class="snav" id="snav-donors-btn" onclick="chooseSidebarItem('donors',this,'fa-users','ডোনার তালিকা')">
+    <i class="fa-solid fa-users"></i> <span>ডোনার তালিকা</span>
+  </button>
+  <div class="snav-divider" style="display:block!important"></div>
+  <button class="snav" id="snav-available-btn" onclick="chooseSidebarItem('available',this,'fa-circle-check','উপলব্ধ')">
+    <i class="fa-solid fa-circle-check"></i> <span>উপলব্ধ</span>
+  </button>
+  <button class="snav" id="snav-cooldown-btn" onclick="chooseSidebarItem('cooldown',this,'fa-clock','কুলডাউনে')">
+    <i class="fa-solid fa-clock"></i> <span>কুলডাউনে</span>
+  </button>
+</div>
+
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════════
+     FIREBASE + LOGIC
+══════════════════════════════════════ -->
+<script type="module">
+import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, push, onValue, remove, update, get, increment }
+                          from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+                          from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+/* ── Config ── */
+const firebaseConfig = {
+  apiKey:            "AIzaSyCH5oHFzuC6qbAjV7cgHWQopHtGA180jiU",
+  authDomain:        "blood-network-a851b.firebaseapp.com",
+  databaseURL:       "https://blood-network-a851b-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:         "blood-network-a851b",
+  storageBucket:     "blood-network-a851b.firebasestorage.app",
+  messagingSenderId: "713058868424",
+  appId:             "1:713058868424:web:599441c954490ca5cb19fd",
+  measurementId:     "G-SL16TBJ2FQ"
+};
+
+const app        = initializeApp(firebaseConfig);
+const db         = getDatabase(app);
+const auth       = getAuth(app);
+const dbRef      = ref(db, 'donors');
+const pendingRef = ref(db, 'pendingDonors');
+const reqRef     = ref(db, 'bloodRequests');
+
+/* ══ State ══ */
+let donors    = [];
+let pending   = [];
+let requests  = [];
+let filterG   = 'all';
+let isAdmin   = false;
+let adminUser = null;
+const CD      = 90;
+
+/* ══ Cache keys ══ */
+const CACHE_DONORS   = 'rbcache_donors';
+const CACHE_PENDING  = 'rbcache_pending';
+const CACHE_STATS    = 'rbcache_stats';
+const CACHE_REQUESTS = 'rbcache_requests';
+
+/* ══ Debounce helper ══ */
+function debounce(fn, ms) {
+  let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+}
+
+/* ══ Shallow hash for diff check — skip re-render if data unchanged ══ */
+function quickHash(arr) {
+  return arr.length + '|' + (arr[0]?.id||'') + '|' + (arr[arr.length-1]?.id||'');
+}
+let _donorsHash = '', _pendingHash = '';
+
+
+/* ══ Auth state ══ */
+onAuthStateChanged(auth, user => {
+  if (user) {
+    isAdmin   = true;
+    adminUser = user;
+    document.getElementById('abadge').style.display = 'inline';
+    document.getElementById('admin-email-show').textContent = user.email;
+    document.getElementById('nav-a').classList.add('admin-active');
+    requestAnimationFrame(renderCards);
+    if (document.getElementById('pg-admin').style.display !== 'none')
+      requestAnimationFrame(renderAdminGrid);
+  } else {
+    isAdmin   = false;
+    adminUser = null;
+    document.getElementById('abadge').style.display = 'none';
+    document.getElementById('nav-a').classList.remove('admin-active');
+    requestAnimationFrame(renderCards);
+  }
+});
+
+/* ══ Realtime DB — donors ══ */
+onValue(dbRef, snap => {
+  const raw = [];
+  const d   = snap.val();
+  if (d) Object.entries(d).forEach(([id, v]) => raw.push({ id, ...v }));
+  const h = quickHash(raw);
+  if (h === _donorsHash) { hideCover(); setFB(true); return; } // no change
+  _donorsHash = h;
+  donors = raw;
+  // persist to cache for instant next load
+  try { localStorage.setItem(CACHE_DONORS, JSON.stringify(donors)); } catch(e) {}
+  hideCover();
+  setFB(true);
+  debouncedRefresh();
+}, err => {
+  hideCover();
+  setFB(false);
+  toast('Firebase সংযোগ ব্যর্থ', 'err');
+});
+
+/* ══ Realtime DB — pending ══ */
+onValue(pendingRef, snap => {
+  const raw = [];
+  const d   = snap.val();
+  if (d) Object.entries(d).forEach(([id, v]) => raw.push({ id, ...v }));
+  const h = quickHash(raw);
+  if (h === _pendingHash) return;
+  _pendingHash = h;
+  pending = raw;
+  try { localStorage.setItem(CACHE_PENDING, JSON.stringify(pending)); } catch(e) {}
+  const pb = document.getElementById('pend-badge');
+  if (pb) { pb.textContent = pending.length || ''; pb.style.display = pending.length ? 'inline' : 'none'; }
+  if (isAdmin && document.getElementById('pg-admin').style.display !== 'none')
+    requestAnimationFrame(renderAdminGrid);
+}, err => console.warn('pendingDonors:', err.message));
+
+/* ══ Realtime DB — blood requests ══ */
+onValue(reqRef, snap => {
+  const raw = [];
+  const d   = snap.val();
+  if (d) Object.entries(d).forEach(([id, v]) => raw.push({ id, ...v }));
+  requests = raw;
+  try { localStorage.setItem(CACHE_REQUESTS, JSON.stringify(requests)); } catch(e) {}
+  // update sidebar badge for pending requests
+  const newReqs = requests.filter(r => r.status === 'pending');
+  const rb = document.getElementById('snav-req-cnt');
+  if (rb) { rb.textContent = newReqs.length; rb.style.display = newReqs.length ? 'flex' : 'none'; }
+  // Re-render donor cards immediately (real-time: pending/accepted states change instantly)
+  const onDonors = document.getElementById('pg-donors')?.style.display !== 'none';
+  if (onDonors) requestAnimationFrame(renderCards);
+  // Re-render admin requests section if open
+  if (isAdmin && document.getElementById('pg-admin')?.style.display !== 'none' && adminSection === 'requests')
+    requestAnimationFrame(() => renderSection('requests'));
+}, err => console.warn('bloodRequests:', err.message));
+
+/* ══ Stats listener (lightweight node) ══ */
+onValue(ref(db,'stats'), snap => {
+  const s = snap.val() || {};
+  try { localStorage.setItem(CACHE_STATS, JSON.stringify(s)); } catch(e) {}
+  if (document.getElementById('st-don')) animNum('st-don', s.totalDonations || 0);
+  if (document.getElementById('st-vis')) animNum('st-vis', s.visitors       || 0);
+  const kd = document.getElementById('kpi-don');
+  if (kd) kd.textContent = s.totalDonations || 0;
+}, err => console.warn('stats:', err.message));
+
+/* ══ Visitor counter — localStorage: once per device ══ */
+(async function() {
+  // Check localStorage (persists across tabs & sessions on same device)
+  if (localStorage.getItem('rktbndhn_visited')) return;
+  // Mark this device as visited
+  localStorage.setItem('rktbndhn_visited', '1');
+  try {
+    await update(ref(db, 'stats'), { visitors: increment(1) });
+  } catch(e) { console.warn('visitor:', e.message); }
+})();
+
+let coverHidden = false;
+function hideCover() {
+  if (coverHidden) return;
+  coverHidden = true;
+  const c = document.getElementById('cover');
+  c.classList.add('gone');
+  setTimeout(() => { c.style.display = 'none'; }, 450);
+}
+// Safety: always remove loading screen after 5s no matter what
+setTimeout(hideCover, 5000);
+
+function setFB(ok) {
+  document.getElementById('fb-dot').className = 'fb-dot' + (ok ? '' : ' off');
+  document.getElementById('fb-txt').textContent = ok ? 'Live ●' : 'সংযোগ নেই';
+}
+
+/* ══════ EXPERIENCE HELPERS ══════ */
+/* ══ maskPhone: hide middle digits for non-admin ══ */
+window.maskPhone = function(phone) {
+  if (!phone) return '—';
+  const p = phone.replace(/\s|-/g,'');
+  if (p.length >= 7) return p.slice(0,3) + '••••' + p.slice(-2);
+  return '••••••••';
+};
+
+/* ══ Sidebar three-dot menu ══ */
+window.toggleSidebarMenu = function() {
+  const dd  = document.getElementById('sidebar-dropdown');
+  const btn = document.getElementById('sidebar-threedot-btn');
+  const isOpen = dd.style.display !== 'none';
+  if (isOpen) {
+    dd.style.display = 'none';
+    btn.style.background = 'transparent';
+    btn.style.borderColor = 'var(--bdr)';
+    btn.style.color = 'var(--txt-m)';
+    return;
+  }
+  // Position dropdown below+aligned to button using getBoundingClientRect
+  const rect = btn.getBoundingClientRect();
+  const ddW  = 220; // min-width
+  let left   = rect.left;
+  // Prevent overflow off right edge
+  if (left + ddW > window.innerWidth - 8) left = window.innerWidth - ddW - 8;
+  // Prevent overflow off bottom edge
+  const ddH  = 320; // approx height
+  let top    = rect.bottom + 6;
+  if (top + ddH > window.innerHeight) top = rect.top - ddH - 6;
+
+  dd.style.top    = top  + 'px';
+  dd.style.left   = left + 'px';
+  dd.style.width  = ddW  + 'px';
+  dd.style.display = 'block';
+  btn.style.background  = 'var(--red-l)';
+  btn.style.borderColor = 'var(--red)';
+  btn.style.color       = 'var(--red)';
+};
+window.chooseSidebarItem = function(sec, btn, icon, label) {
+  const lbl = document.getElementById('sidebar-active-label');
+  if (lbl) lbl.innerHTML = `<i class="fa-solid ${icon}" style="color:var(--red)"></i> ${label}`;
+  const dd = document.getElementById('sidebar-dropdown');
+  if (dd) dd.style.display = 'none';
+  const tb = document.getElementById('sidebar-threedot-btn');
+  if (tb) { tb.style.background='transparent'; tb.style.borderColor='var(--bdr)'; tb.style.color='var(--txt-m)'; }
+  showAdminSec(sec, btn);
+};
+// Close dropdown on outside click
+document.addEventListener('click', function(e) {
+  const dd  = document.getElementById('sidebar-dropdown');
+  const btn = document.getElementById('sidebar-threedot-btn');
+  if (dd && btn && !btn.contains(e.target) && !dd.contains(e.target)) {
+    dd.style.display = 'none';
+    btn.style.background = 'transparent'; btn.style.borderColor = 'var(--bdr)'; btn.style.color = 'var(--txt-m)';
+  }
+});
+
+window.expBadgeHtml = function(n) {
+  n = parseInt(n) || 0;
+  if (n === 0) return '<span class="exp-badge exp-0"><i class="fa-solid fa-seedling fa-xs"></i> নতুন</span>';
+  if (n <= 3)  return '<span class="exp-badge exp-new"><i class="fa-solid fa-star-half-stroke fa-xs"></i> শিক্ষানবিশ</span>';
+  if (n <= 9)  return '<span class="exp-badge exp-mid"><i class="fa-solid fa-star fa-xs"></i> অভিজ্ঞ</span>';
+  if (n <= 19) return '<span class="exp-badge exp-vet"><i class="fa-solid fa-fire fa-xs"></i> ভেটেরান</span>';
+  return '<span class="exp-badge exp-hero"><i class="fa-solid fa-trophy fa-xs"></i> হিরো</span>';
+};
+window.changeExp = function(delta) {
+  const el = document.getElementById('fexp');
+  let v = (parseInt(el.value) || 0) + delta;
+  el.value = Math.max(0, Math.min(999, v));
+  document.getElementById('exp-hint').innerHTML = '<i class="fa-solid fa-star fa-xs"></i> ' + expLabelText(el.value);
+};
+window.clampExp = function(el) {
+  let v = parseInt(el.value) || 0;
+  el.value = Math.max(0, Math.min(999, v));
+};
+function expLabelText(n) {
+  n = parseInt(n) || 0;
+  if (n === 0) return 'নতুন ডোনার';
+  if (n <= 3)  return n + ' বার — শিক্ষানবিশ পর্যায়';
+  if (n <= 9)  return n + ' বার — অভিজ্ঞ ডোনার';
+  if (n <= 19) return n + ' বার — ভেটেরান ডোনার';
+  return n + ' বার — লিজেন্ডারি হিরো 🏆';
+}
+window.changeExpAdmin = async function(id, delta) {
+  const d = donors.find(x => x.id === id); if (!d) return;
+  const cur = parseInt(d.donationCount) || 0;
+  const nv  = Math.max(0, Math.min(999, cur + delta));
+  if (nv === cur) return;
+  try {
+    await update(ref(db, 'donors/' + id), { donationCount: nv });
+    const el = document.getElementById('ecount-' + id);
+    if (el) el.textContent = nv;
+    toast((delta > 0 ? 'দান সংখ্যা বাড়ানো হয়েছে: ' : 'দান সংখ্যা কমানো হয়েছে: ') + nv, 'ok');
+  } catch(e) { toast(e.message, 'err'); }
+};
+
+/* ══════ COOLDOWN ENGINE ══════ */
+/* ── today's ms cached once per minute ── */
+let _todayMs = 0, _todayStr = '';
+function getTodayMs() {
+  const n = Date.now();
+  if (n - _todayMs > 60000) {
+    const d = new Date(); d.setHours(0,0,0,0);
+    _todayMs = d.getTime(); _todayStr = d.toISOString().split('T')[0];
+  }
+  return _todayMs;
+}
+/* ── cd() memo cache ── */
+const _cdCache = new Map();
+window.cd = function cd(donor) {
+  if (!donor.lastDonation) return { s:'na', left:0, passed:0, pct:0, next:null };
+  const cacheKey = donor.id + '|' + donor.lastDonation;
+  if (_cdCache.has(cacheKey)) return _cdCache.get(cacheKey);
+  const last = new Date(donor.lastDonation);
+  last.setHours(0,0,0,0);
+  const todayMs = getTodayMs();
+  const passed  = Math.floor((todayMs - last.getTime()) / 86400000);
+  const left    = Math.max(0, CD - passed);
+  const pct     = Math.min(100, Math.round(passed / CD * 100));
+  const nx      = new Date(last); nx.setDate(nx.getDate() + CD);
+  const s = passed < 30 ? 'fresh' : passed < CD ? 'wait' : 'ready';
+  const result  = { s, left, passed, pct, next: nx.toISOString().split('T')[0] };
+  _cdCache.set(cacheKey, result);
+  return result;
+};
+window.pillHtml = function(c) {
+  if (c.s==='na')    return `<span class="cd-pill pill-n"><i class="fa-solid fa-question fa-xs"></i> তথ্য নেই</span>`;
+  if (c.s==='ready') return `<span class="cd-pill pill-r"><i class="fa-solid fa-check fa-xs"></i> উপলব্ধ</span>`;
+  if (c.s==='wait')  return `<span class="cd-pill pill-w"><i class="fa-solid fa-clock fa-xs"></i> ${c.left} দিন বাকি</span>`;
+                     return `<span class="cd-pill pill-f"><i class="fa-solid fa-droplet fa-xs"></i> ${c.left} দিন বাকি</span>`;
+};
+window.barCls = function(c) { return c.s==='fresh'?'bar-r':c.s==='wait'?'bar-a':'bar-g'; }
+
+/* ══════ REFRESH ALL ══════ */
+window.refreshAll = function refreshAll() {
+  updateStats();
+  renderCards();
+  // FAB সবসময় দেখা যাবে donors page-এ (user submit করতে পারবে)
+  const fab = document.getElementById('fab');
+  const onDonors = document.getElementById('pg-donors').style.display !== 'none';
+  if (onDonors) fab.classList.remove('fab-hidden');
+  else fab.classList.add('fab-hidden');
+  if (isAdmin && document.getElementById('pg-admin').style.display !== 'none') renderAdminGrid();
+}
+function updateStats() {
+  const re = donors.filter(d => { const c=cd(d); return c.s==='ready'||c.s==='na'; }).length;
+  const wa = donors.filter(d => { const c=cd(d); return c.s==='wait'||c.s==='fresh'; }).length;
+  animNum('st-t', donors.length);
+  animNum('st-r', re);
+  animNum('st-w', wa);
+  animNum('st-g', new Set(donors.map(d=>d.blood).filter(Boolean)).size);
+  const pb = document.getElementById('pend-badge');
+  if (pb) { pb.textContent = pending.length || ''; pb.style.display = pending.length ? 'inline' : 'none'; }
+}
+
+function animNum(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const cur = parseInt(el.textContent) || 0;
+  if (cur === val) return; // skip if same
+  if (Math.abs(val - cur) <= 1) { el.textContent = val; return; } // skip tiny diff
+  const steps = 12, inc = (val - cur) / steps;
+  let c = cur, i = 0;
+  const tick = () => {
+    c += inc; i++;
+    el.textContent = Math.round(c);
+    if (i < steps) requestAnimationFrame(tick);
+    else el.textContent = val;
+  };
+  requestAnimationFrame(tick);
+}
+
+/* ══════ DONOR CARDS ══════ */
+const debouncedRenderCards = debounce(() => window.renderCards(), 120);
+window.renderCards = function() {
+  const s   = (document.getElementById('srch').value || '').toLowerCase();
+  const grid = document.getElementById('grid');
+  // only confirmed donors shown on public page
+  const flt  = donors.filter(d => {
+    const mg = filterG === 'all' || d.blood === filterG;
+    const ms = !s || d.name?.toLowerCase().includes(s) || d.district?.toLowerCase().includes(s);
+    return mg && ms;
+  });
+
+  if (!flt.length) {
+    grid.innerHTML = `<div class="empty-state"><i class="fa-solid fa-droplet-slash"></i><h3>কোনো ডোনার পাওয়া যায়নি</h3><p>ফিল্টার পরিবর্তন করুন অথবা নতুন ডোনার যোগ করুন</p></div>`;
+    return;
+  }
+
+  // Sort: ready/na first, then wait, then fresh/cooldown
+  const sorted = [...flt].sort((a, b) => {
+    const score = d => {
+      const hasPend = requests.some(r => r.donorId === d.id && r.status === 'pending');
+      const hasAcc  = requests.some(r => r.donorId === d.id && r.status === 'accepted');
+      if (hasAcc)  return 2;   // donating — show but below pending
+      if (hasPend) return 1;   // pending request
+      const c = cd(d);
+      if (c.s === 'ready' || c.s === 'na') return 0;  // available — TOP
+      if (c.s === 'wait')  return 3;
+      return 4; // fresh/cooldown
+    };
+    return score(a) - score(b);
+  });
+
+  grid.innerHTML = sorted.map((d, i) => {
+    const c   = cd(d);
+    const pct = c.s==='na' ? 0 : c.pct;
+    const bc  = barCls(c);
+    const dtext = c.s==='na' ? '—' : c.s==='ready' ? 'এখনই দান করতে পারবেন' : `${c.left} দিন বাকি`;
+    const dclr  = c.s==='fresh'?'color:var(--red)':c.s==='wait'?'color:var(--amber)':'color:var(--green)';
+
+    // Request states (real-time from requests array)
+    const pendReq = requests.find(r => r.donorId === d.id && r.status === 'pending');
+    const accReq  = requests.find(r => r.donorId === d.id && r.status === 'accepted');
+    const isAvailable = !pendReq && !accReq && (c.s === 'ready' || c.s === 'na');
+
+    // Card border/bg highlight for available donors
+    const cardStyle = isAvailable
+      ? `border-color:rgba(26,138,90,.4);background:linear-gradient(180deg,rgba(26,138,90,.04) 0%,var(--card) 60%);`
+      : accReq
+      ? `border-color:rgba(200,16,46,.35);background:linear-gradient(180deg,rgba(200,16,46,.04) 0%,var(--card) 60%);`
+      : '';
+
+    return `
+    <div class="dcard" style="animation-delay:${i*.04}s;${cardStyle}">
+      ${accReq ? `
+      <div style="display:flex;align-items:center;gap:6px;background:linear-gradient(90deg,var(--red-l),transparent);border:1px solid var(--bdr-r);border-radius:8px;padding:6px 11px;margin-bottom:.7rem;font-size:.78rem;color:var(--red);font-weight:700">
+        <i class="fa-solid fa-droplet fa-xs" style="animation:heartbeat 1.2s ease-in-out infinite"></i>
+        রক্তদান করছেন — আবেদন প্রক্রিয়াধীন
+      </div>` : ''}
+      ${isAvailable ? `
+      <div style="display:flex;align-items:center;gap:5px;background:var(--green-l);border:1px solid rgba(26,138,90,.2);border-radius:8px;padding:5px 10px;margin-bottom:.7rem;font-size:.74rem;color:var(--green);font-weight:700">
+        <i class="fa-solid fa-circle-check fa-xs"></i> রক্তদানের জন্য উপযুক্ত
+      </div>` : ''}
+      <div class="card-head">
+        <div class="blood-badge" style="${accReq?'animation:heartbeat 1.5s ease-in-out infinite;box-shadow:0 0 20px var(--red-g)':''}">
+          ${d.blood||'?'}
+        </div>
+        <div class="card-info-top">
+          <div class="card-name">${d.name||'অজানা'}</div>
+          <div class="card-loc"><i class="fa-solid fa-location-dot fa-xs"></i>${d.district||'—'}${d.address?`, ${d.address}`:''}</div>
+        </div>
+      </div>
+      <div class="card-rows">
+        <div class="card-row"><i class="fa-solid fa-phone"></i>${isAdmin ? (d.phone||'—') : maskPhone(d.phone)}</div>
+        <div class="card-row"><i class="fa-solid fa-cake-candles"></i>বয়স: ${d.age||'—'} বছর</div>
+        <div class="card-row"><i class="fa-solid fa-calendar-days"></i>শেষ দান: ${d.lastDonation||'অজানা'}</div>
+        <div class="card-row"><i class="fa-solid fa-award" style="color:var(--red)"></i>মোট দান: <strong style="font-family:'Fira Code',monospace">${d.donationCount||0}</strong> বার &nbsp;${expBadgeHtml(d.donationCount||0)}</div>
+      </div>
+      ${(c.s==='wait'||c.s==='fresh') ? `<div class="cd-wrap">
+        <div class="cd-top">
+          <span class="cd-label"><i class="fa-solid fa-hourglass-half fa-xs"></i> ৯০ দিনের কুলডাউন</span>
+          ${pillHtml(c)}
+        </div>
+        <div class="cd-bar-bg"><div class="cd-bar ${bc}" style="width:${pct}%"></div></div>
+        <div class="cd-days" style="${dclr}">${dtext} ${pct>0?`(${pct}% সম্পন্ন)`:''}</div>
+      </div>` : ''}
+      <div class="card-footer">
+        ${(() => {
+          if (accReq) {
+            return `<button class="cta-call-blocked" style="cursor:not-allowed;opacity:.65;border-color:var(--bdr-r);color:var(--red)"><i class="fa-solid fa-droplet fa-xs"></i> রক্তদান করছেন</button>`;
+          }
+          if (pendReq) {
+            return `<button class="cta-call-blocked" style="cursor:not-allowed" title="ইতিমধ্যে আবেদন পেন্ডিংয়ে আছে"><i class="fa-solid fa-hourglass-half"></i> আবেদন পেন্ডিংয়ে আছে</button>`;
+          }
+          if (c.s==='ready'||c.s==='na') {
+            return `<button class="cta-btn cta-request" onclick="openRequestModal('${d.id}')"><i class="fa-solid fa-hand-holding-medical"></i> রক্তের আবেদন করুন</button>`;
+          }
+          return `<button class="cta-call-blocked" title="৯০ দিনের কুলডাউন শেষ হয়নি — ${c.left} দিন বাকি"><i class="fa-solid fa-clock-rotate-left"></i> কুলডাউনে আছেন (${c.left} দিন)</button>`;
+        })()}
+        ${isAdmin ? `<button class="cta-btn" onclick="openEdit('${d.id}')"><i class="fa-solid fa-pen-to-square"></i> সম্পাদনা</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+};
+
+/* ══════ ADMIN GRID (Card-based, mobile-friendly) ══════ */
+/* ══════ ADMIN SECTIONS ══════ */
+let adminSection = 'dash';
+window.showAdminSec = function(sec, btn) {
+  adminSection = sec;
+  document.querySelectorAll('.snav').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + sec).classList.add('active');
+  if (sec === 'dash') renderDashboard();
+  else renderSection(sec);
+};
+
+window.renderAdminGrid = function() {
+  // update counts everywhere
+  const re = donors.filter(d=>{ const c=cd(d); return c.s==='ready'||c.s==='na'; }).length;
+  const wa = donors.filter(d=>{ const c=cd(d); return c.s==='wait'||c.s==='fresh'; }).length;
+  const fr = donors.filter(d=>cd(d).s==='fresh').length;
+  document.getElementById('as-t').textContent = donors.length;
+  document.getElementById('as-r').textContent = re;
+  document.getElementById('as-f').textContent = fr;
+  document.getElementById('as-p').textContent = pending.length;
+  // sidebar pending badge
+  const sp = document.getElementById('snav-pend-cnt');
+  if (sp) { sp.textContent = pending.length; sp.style.display = pending.length ? 'flex' : 'none'; }
+  // sidebar requests badge
+  const newReqs = requests.filter(r => r.status === 'pending').length;
+  const rb = document.getElementById('snav-req-cnt');
+  if (rb) { rb.textContent = newReqs; rb.style.display = newReqs ? 'flex' : 'none'; }
+  // kpi
+  const ki = document.getElementById('kpi-total'); if(ki) ki.textContent = donors.length;
+  const kr = document.getElementById('kpi-ready'); if(kr) kr.textContent = re;
+  const kp = document.getElementById('kpi-pend');  if(kp) kp.textContent = pending.length;
+  // render active section
+  if (adminSection === 'dash') renderDashboard();
+  else renderSection(adminSection);
+};
+
+/* helper: build donor row */
+function donorRow(d, extraBtns) {
+  const c  = cd(d);
+  const mp = c.s==='na'?'pill-n':c.s==='ready'?'pill-r':c.s==='wait'?'pill-w':'pill-f';
+  const mt = c.s==='na'?'তথ্য নেই':c.s==='ready'?'উপলব্ধ':`${c.left} দিন বাকি`;
+  return `<div class="drow" style="animation-delay:.04s">
+    <div class="drow-blood">${d.blood||'?'}</div>
+    <div class="drow-info">
+      <div class="drow-name">${d.name||'—'}</div>
+      <div class="drow-meta">
+        <span class="drow-tag"><i class="fa-solid fa-location-dot"></i>${d.district||'—'}</span>
+        <span class="drow-tag"><i class="fa-solid fa-phone"></i>${d.phone||'—'}</span>
+        <span class="cd-pill ${mp}" style="font-size:.66rem;padding:2px 7px"><i class="fa-solid fa-circle fa-xs"></i> ${mt}</span>
+      </div>
+    </div>
+    <div class="drow-actions">
+      <button class="drow-btn drow-btn-view" onclick="viewDonor('${d.id}',false)"><i class="fa-solid fa-eye"></i> দেখুন</button>
+      ${extraBtns||''}
+    </div>
+  </div>`;
+}
+
+function pendingRow(d) {
+  const tag = d.editRequest ? 'সম্পাদনা' : 'নতুন';
+  return `<div class="drow" style="border-color:rgba(181,112,10,.4)">
+    <div class="drow-blood" style="background:var(--amber)">${d.blood||'?'}</div>
+    <div class="drow-info">
+      <div class="drow-name">${d.name||'—'}</div>
+      <div class="drow-meta">
+        <span class="drow-tag"><i class="fa-solid fa-location-dot"></i>${d.district||'—'}</span>
+        <span class="drow-tag"><i class="fa-solid fa-phone"></i>${d.phone||'—'}</span>
+        <span class="drow-pend-tag"><i class="fa-solid fa-hourglass-half fa-xs"></i> ${tag}</span>
+      </div>
+    </div>
+    <div class="drow-actions">
+      <button class="drow-btn drow-btn-view" onclick="viewDonor('${d.id}',true)"><i class="fa-solid fa-eye"></i> দেখুন</button>
+      <button class="drow-btn drow-btn-ok"   onclick="approveDonor('${d.id}')"><i class="fa-solid fa-check"></i></button>
+      <button class="drow-btn drow-btn-x"    onclick="rejectDonor('${d.id}')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  </div>`;
+}
+
+function filterList(list, srchId, bloodId) {
+  const s = (document.getElementById(srchId)?.value||'').toLowerCase();
+  const b = document.getElementById(bloodId)?.value||'all';
+  return list.filter(d =>
+    (b==='all'||d.blood===b) &&
+    (!s||(d.name||'').toLowerCase().includes(s)||(d.district||'').toLowerCase().includes(s)||(d.phone||'').includes(s))
+  );
+}
+
+function sortList(list, sortId) {
+  const by = document.getElementById(sortId)?.value||'name';
+  const l  = [...list];
+  if (by==='blood') l.sort((a,b)=>(a.blood||'').localeCompare(b.blood||''));
+  else if (by==='date') l.sort((a,b)=>(b.lastDonation||'').localeCompare(a.lastDonation||''));
+  else if (by==='exp')  l.sort((a,b)=>(b.donationCount||0)-(a.donationCount||0));
+  else l.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  return l;
+}
+
+function setList(el, rows, empty) {
+  el.innerHTML = rows.length
+    ? `<div style="display:flex;flex-direction:column;gap:.5rem;width:100%;overflow-x:hidden">${rows.join('')}</div>`
+    : `<div style="text-align:center;padding:3rem;color:var(--txt-d)"><i class="fa-solid fa-inbox" style="font-size:2rem;display:block;margin-bottom:.6rem"></i>${empty}</div>`;
+}
+
+window.renderSection = function(sec) {
+  if (sec === 'pending') {
+    const el   = document.getElementById('list-pending'); if(!el) return;
+    const flt  = filterList(pending, 'pend-srch', 'pend-blood');
+    setList(el, flt.map(pendingRow), 'কোনো পেন্ডিং অনুরোধ নেই');
+  } else if (sec === 'requests') {
+    const el = document.getElementById('list-requests'); if(!el) return;
+    if (!requests.length) {
+      el.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--txt-d)"><i class="fa-solid fa-inbox" style="font-size:2rem;display:block;margin-bottom:.6rem"></i>কোনো রক্তের আবেদন নেই</div>`;
+      return;
+    }
+    // Filters
+    const dateFilter  = document.getElementById('req-date-from')?.value||'';
+    const statusF     = document.getElementById('req-status-filter')?.value||'all';
+
+    // Sort: pending first, accepted second, then donated/rejected by time desc
+    const sorted = [...requests].sort((a, b) => {
+      const order = { pending: 0, accepted: 1, donated: 2, rejected: 3 };
+      const ao = order[a.status] ?? 4;
+      const bo = order[b.status] ?? 4;
+      if (ao !== bo) return ao - bo;
+      return (b.submittedAt || '').localeCompare(a.submittedAt || '');
+    });
+
+    const filtered = sorted.filter(r => {
+      if (statusF !== 'all' && r.status !== statusF) return false;
+      if (dateFilter && (r.submittedAt||'') !== dateFilter) return false;
+      return true;
+    });
+
+    if (!filtered.length) {
+      el.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--txt-d)"><i class="fa-solid fa-filter" style="font-size:2rem;display:block;margin-bottom:.6rem"></i>কোনো আবেদন পাওয়া যায়নি — ফিল্টার পরিবর্তন করুন</div>`;
+      return;
+    }
+
+    const pendingReqs  = filtered.filter(r => r.status === 'pending');
+    const acceptedReqs = filtered.filter(r => r.status === 'accepted');
+    const otherReqs    = filtered.filter(r => r.status === 'donated' || r.status === 'rejected');
+    let html = '';
+    if (pendingReqs.length) {
+      html += `<div class="req-section-header"><i class="fa-solid fa-hourglass-half"></i> নতুন আবেদন <span class="req-count-badge">${pendingReqs.length}</span></div>`;
+      html += `<div style="display:flex;flex-direction:column;gap:.45rem;margin-bottom:1.2rem;width:100%;overflow-x:hidden">${pendingReqs.map(requestCompactRow).join('')}</div>`;
+    }
+    if (acceptedReqs.length) {
+      html += `<div style="display:flex;align-items:center;gap:.6rem;padding:.45rem .7rem;margin-bottom:.6rem;font-size:.78rem;font-weight:700;color:var(--green);border-bottom:1px solid rgba(26,138,90,.2)"><i class="fa-solid fa-circle-check fa-xs"></i> একসেপ্ট করা আবেদন (${acceptedReqs.length})</div>`;
+      html += `<div style="display:flex;flex-direction:column;gap:.45rem;margin-bottom:1.2rem;width:100%;overflow-x:hidden">${acceptedReqs.map(requestCompactRow).join('')}</div>`;
+    }
+    if (otherReqs.length) {
+      html += `<div style="display:flex;align-items:center;gap:.6rem;padding:.4rem .6rem;margin-bottom:.6rem;font-size:.78rem;font-weight:700;color:var(--txt-d);border-bottom:1px solid var(--bdr)"><i class="fa-solid fa-clock-rotate-left fa-xs"></i> সম্পন্ন / বাতিল (${otherReqs.length})</div>`;
+      html += `<div style="display:flex;flex-direction:column;gap:.45rem;width:100%;overflow-x:hidden">${otherReqs.map(requestCompactRow).join('')}</div>`;
+    }
+    el.innerHTML = html;
+  } else if (sec === 'donors') {
+    const el   = document.getElementById('list-donors'); if(!el) return;
+    const flt  = sortList(filterList(donors, 'don-srch', 'don-blood'), 'don-sort');
+    setList(el, flt.map(d => donorRow(d)), 'কোনো ডোনার পাওয়া যায়নি');
+  } else if (sec === 'available') {
+    const el   = document.getElementById('list-available'); if(!el) return;
+    const base = donors.filter(d=>{ const c=cd(d); return c.s==='ready'||c.s==='na'; });
+    const flt  = filterList(base, 'avl-srch', 'avl-blood');
+    setList(el, flt.map(d => donorRow(d)), 'উপলব্ধ কোনো ডোনার নেই');
+  } else if (sec === 'cooldown') {
+    const el   = document.getElementById('list-cooldown'); if(!el) return;
+    const base = donors.filter(d=>{ const c=cd(d); return c.s==='wait'||c.s==='fresh'; });
+    const flt  = filterList(base, 'cd-srch', 'cd-blood');
+    setList(el, flt.map(d => donorRow(d)), 'কুলডাউনে কোনো ডোনার নেই');
+  }
+};
+
+/* ──── CHARTS ──── */
+let chartBlood = null, chartStatus = null, chartTrend = null, chartDonations = null;
+
+function destroyCharts() {
+  [chartBlood, chartStatus, chartTrend, chartDonations].forEach(c => { if(c) c.destroy(); });
+  chartBlood = chartStatus = chartTrend = chartDonations = null;
+}
+
+window.renderDashboard = function() {
+  const rawVal = parseFloat(document.getElementById('dash-month')?.value || '1');
+  const now    = new Date();
+
+  // ── Compute cutoff and build time buckets ──
+  // rawVal < 1 = days mode, rawVal >= 1 = months mode
+  let cutoff, trendLabels, trendData;
+  const isDayMode  = rawVal < 1;
+  const isYearMode = rawVal >= 24;  // 2+ years → show by year
+
+  if (isDayMode) {
+    // 1 day = last 24h shown hourly, 7 days = last 7 days daily
+    const days = Math.round(rawVal * 30);  // 0.033*30≈1, 0.23*30≈7
+    cutoff = new Date(now - days * 86400000);
+    trendLabels = []; trendData = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(now - i * 86400000);
+      const label = d.toLocaleDateString('bn-BD', { day:'numeric', month:'short' });
+      const count = donors.filter(x => {
+        if (!x.addedAt) return false;
+        const xd = new Date(x.addedAt);
+        return xd.toDateString() === d.toDateString();
+      }).length;
+      trendLabels.push(label);
+      trendData.push(count);
+    }
+  } else if (isYearMode) {
+    // 2+ years → group by year
+    const years = Math.ceil(rawVal / 12);
+    cutoff = new Date(now.getFullYear() - years + 1, 0, 1);
+    trendLabels = []; trendData = [];
+    for (let i = years - 1; i >= 0; i--) {
+      const yr = now.getFullYear() - i;
+      const label = String(yr);
+      const count = donors.filter(x => {
+        if (!x.addedAt) return false;
+        return new Date(x.addedAt).getFullYear() === yr;
+      }).length;
+      trendLabels.push(label);
+      trendData.push(count);
+    }
+  } else {
+    // months mode
+    const months = Math.round(rawVal);
+    cutoff = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1);
+    trendLabels = []; trendData = [];
+    for (let i = months - 1; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const label = d.toLocaleDateString('bn-BD', { month:'short', year:'2-digit' });
+      const count = donors.filter(x => {
+        if (!x.addedAt) return false;
+        const xd = new Date(x.addedAt);
+        return xd.getFullYear() === d.getFullYear() && xd.getMonth() === d.getMonth();
+      }).length;
+      trendLabels.push(label);
+      trendData.push(count);
+    }
+  }
+
+  destroyCharts();
+
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const gridC  = isDark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)';
+  const labelC = isDark ? '#9A8A8C' : '#A89898';
+  const Chart  = window.Chart;
+  if (!Chart) return;
+
+  const baseOpts = {
+    responsive:true, maintainAspectRatio:true,
+    plugins:{ legend:{ display:false } },
+    scales:{
+      x:{ grid:{color:gridC}, ticks:{color:labelC, font:{size:10}} },
+      y:{ grid:{color:gridC}, ticks:{color:labelC, font:{size:10}}, beginAtZero:true }
+    }
+  };
+
+  // ── Chart 1: blood group bar ──
+  const groups  = ['A+','A-','B+','B-','AB+','AB-','O+','O-'];
+  const bCounts = groups.map(g => donors.filter(d => d.blood === g).length);
+  const bColors = ['#C8102E','#9A0B22','#E53935','#B71C1C','#FF5252','#D32F2F','#F44336','#C62828'];
+
+  chartBlood = new Chart(document.getElementById('chart-blood'), {
+    type:'bar',
+    data:{
+      labels: groups,
+      datasets:[{ data:bCounts, backgroundColor:bColors, borderRadius:5, borderSkipped:false }]
+    },
+    options:{ ...baseOpts, plugins:{ legend:{display:false} } }
+  });
+
+  // ── Chart 2: status doughnut ──
+  const re = donors.filter(d => { const c=cd(d); return c.s==='ready'||c.s==='na'; }).length;
+  const wa = donors.filter(d => cd(d).s==='wait').length;
+  const fr = donors.filter(d => cd(d).s==='fresh').length;
+  const pp = pending.length;
+
+  chartStatus = new Chart(document.getElementById('chart-status'), {
+    type:'doughnut',
+    data:{
+      labels:['উপলব্ধ','অপেক্ষমাণ','সদ্য দান','পেন্ডিং'],
+      datasets:[{
+        data:[re,wa,fr,pp],
+        backgroundColor:['#1A8A5A','#B5700A','#C8102E','#E0A020'],
+        borderWidth:2,
+        borderColor: isDark ? '#161213' : '#fff'
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:true,
+      cutout:'62%',
+      plugins:{ legend:{ position:'bottom', labels:{ color:labelC, font:{size:11}, padding:12 } } }
+    }
+  });
+
+  // ── Chart 3: registration trend line ──
+  chartTrend = new Chart(document.getElementById('chart-trend'), {
+    type:'line',
+    data:{
+      labels: trendLabels,
+      datasets:[{
+        label:'নিবন্ধন',
+        data: trendData,
+        borderColor:'#C8102E',
+        backgroundColor:'rgba(200,16,46,.12)',
+        fill:true, tension:.4,
+        pointBackgroundColor:'#C8102E',
+        pointRadius: trendLabels.length > 24 ? 2 : 4,
+        pointHoverRadius:6,
+        borderWidth:2.5
+      }]
+    },
+    options:{
+      ...baseOpts,
+      plugins:{ legend:{ display:false } },
+      scales:{
+        x:{ grid:{color:gridC}, ticks:{color:labelC, font:{size:10}, maxRotation:45, maxTicksLimit:16} },
+        y:{ grid:{color:gridC}, ticks:{color:labelC, font:{size:10}}, beginAtZero:true, precision:0 }
+      }
+    }
+  });
+
+  // ── Chart 4: Total donations trend (cumulative, same style as registration trend) ──
+  const donEl = document.getElementById('chart-donations');
+  if (donEl) {
+    // Build cumulative donation counts per time bucket (same buckets as trendLabels)
+    // For each bucket, sum donationCount of donors whose lastDonation falls in that period
+    const donTrendData = [];
+
+    if (isDayMode) {
+      const days = Math.round(rawVal * 30);
+      for (let i = days - 1; i >= 0; i--) {
+        const d = new Date(now - i * 86400000);
+        const count = donors.filter(x => {
+          if (!x.lastDonation) return false;
+          const xd = new Date(x.lastDonation);
+          return xd.toDateString() === d.toDateString();
+        }).reduce((sum, x) => sum + 1, 0);
+        donTrendData.push(count);
+      }
+    } else if (isYearMode) {
+      const years = Math.ceil(rawVal / 12);
+      for (let i = years - 1; i >= 0; i--) {
+        const yr = now.getFullYear() - i;
+        const count = donors.filter(x => {
+          if (!x.lastDonation) return false;
+          return new Date(x.lastDonation).getFullYear() === yr;
+        }).length;
+        donTrendData.push(count);
+      }
+    } else {
+      const months = Math.round(rawVal);
+      for (let i = months - 1; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const count = donors.filter(x => {
+          if (!x.lastDonation) return false;
+          const xd = new Date(x.lastDonation);
+          return xd.getFullYear() === d.getFullYear() && xd.getMonth() === d.getMonth();
+        }).length;
+        donTrendData.push(count);
+      }
+    }
+
+    chartDonations = new Chart(donEl, {
+      type:'line',
+      data:{
+        labels: trendLabels,
+        datasets:[{
+          label:'রক্তদান',
+          data: donTrendData,
+          borderColor:'#1A8A5A',
+          backgroundColor:'rgba(26,138,90,.12)',
+          fill:true, tension:.4,
+          pointBackgroundColor:'#1A8A5A',
+          pointRadius: trendLabels.length > 24 ? 2 : 4,
+          pointHoverRadius:6,
+          borderWidth:2.5
+        }]
+      },
+      options:{
+        ...baseOpts,
+        plugins:{ legend:{ display:false } },
+        scales:{
+          x:{ grid:{color:gridC}, ticks:{color:labelC, font:{size:10}, maxRotation:45, maxTicksLimit:16} },
+          y:{ grid:{color:gridC}, ticks:{color:labelC, font:{size:10}}, beginAtZero:true, precision:0 }
+        }
+      }
+    });
+  }
+
+  // ── Recent donations table ──
+  const recent = [...donors]
+    .filter(d => d.lastDonation)
+    .sort((a,b) => b.lastDonation.localeCompare(a.lastDonation))
+    .slice(0, 8);
+  const tbody = document.getElementById('dash-recent-body');
+  if (tbody) {
+    if (!recent.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--txt-d)">কোনো দান রেকর্ড নেই</td></tr>';
+    } else {
+      tbody.innerHTML = recent.map(d => {
+        const c = cd(d);
+        const mp = c.s==='ready' ? 'pill-r' : c.s==='wait' ? 'pill-w' : 'pill-f';
+        return `<tr>
+          <td class="td-name">${d.name||'—'}</td>
+          <td><span style="font-family:'Fira Code',monospace;font-weight:700;color:var(--red)">${d.blood||'?'}</span></td>
+          <td>${d.district||'—'}</td>
+          <td><span class="cd-pill ${mp}" style="font-size:.66rem;padding:2px 7px">${d.lastDonation}</span></td>
+          <td><strong style="font-family:'Fira Code',monospace">${d.donationCount||0}</strong> বার</td>
+        </tr>`;
+      }).join('');
+    }
+  }
+};
+
+/* ══════ VIEW DONOR MODAL ══════ */
+window.viewDonor = function(id, isPending) {
+  const d = isPending ? pending.find(x=>x.id===id) : donors.find(x=>x.id===id);
+  if (!d) return;
+  const c    = cd(d);
+  const pct  = c.s==='na' ? 0 : c.pct;
+  const bc   = barCls(c);
+  const mp   = c.s==='na'?'pill-n':c.s==='ready'?'pill-r':c.s==='wait'?'pill-w':'pill-f';
+  const mt   = c.s==='na'?'তথ্য নেই':c.s==='ready'?'উপলব্ধ':`${c.left} দিন বাকি`;
+  const dtext= c.s==='na'?'—':c.s==='ready'?'এখনই দান করতে পারবেন':`${c.left} দিন বাকি`;
+  const dclr = c.s==='fresh'?'color:var(--red)':c.s==='wait'?'color:var(--amber)':'color:var(--green)';
+
+  const pendNotice = isPending
+    ? `<div class="view-pend-notice"><i class="fa-solid fa-hourglass-half"></i> ${d.editRequest?'এটি একটি তথ্য সম্পাদনার অনুরোধ।':'এই ডোনার অনুমোদনের অপেক্ষায় আছেন।'}</div>`
+    : '';
+
+  const actions = isPending
+    ? `<button class="btn-save" style="background:var(--green);box-shadow:none" onclick="approveDonor('${id}');closeM('m-view')"><i class="fa-solid fa-circle-check"></i> অনুমোদন দিন</button>
+       <button class="btn-save" style="background:#E53935;box-shadow:none" onclick="rejectDonor('${id}');closeM('m-view')"><i class="fa-solid fa-xmark"></i> বাতিল করুন</button>`
+    : `<button class="btn-save" onclick="openEdit('${id}');closeM('m-view')"><i class="fa-solid fa-pen-to-square"></i> সম্পাদনা</button>
+       <button class="btn-save" style="background:transparent;border:1.5px solid var(--bdr-r);color:var(--red);box-shadow:none" onclick="openDonate('${id}');closeM('m-view')"><i class="fa-solid fa-droplet"></i> দান রেকর্ড</button>
+       <button class="btn-save" style="background:#E53935;box-shadow:none" onclick="delDonor('${id}');closeM('m-view')"><i class="fa-solid fa-trash-can"></i> মুছুন</button>`;
+
+  document.getElementById('m-view-body').innerHTML = `
+    ${pendNotice}
+    <div class="view-modal-head" style="padding:1rem 0 .5rem">
+      <div class="view-blood-big">${d.blood||'?'}</div>
+      <div>
+        <div class="view-name">${d.name||'অজানা'}</div>
+        <div class="view-loc"><i class="fa-solid fa-location-dot fa-xs"></i>${d.district||'—'}${d.address?', '+d.address:''}</div>
+        ${expBadgeHtml(d.donationCount||0)}
+      </div>
+    </div>
+    <div class="view-grid">
+      <div class="view-field"><div class="view-field-label"><i class="fa-solid fa-phone fa-xs"></i> ফোন</div><div class="view-field-val">${d.phone||'—'}</div></div>
+      <div class="view-field"><div class="view-field-label"><i class="fa-solid fa-cake-candles fa-xs"></i> বয়স</div><div class="view-field-val">${d.age||'—'} বছর</div></div>
+      <div class="view-field"><div class="view-field-label"><i class="fa-solid fa-calendar-days fa-xs"></i> জন্ম তারিখ</div><div class="view-field-val">${d.dob||'—'}</div></div>
+      <div class="view-field"><div class="view-field-label"><i class="fa-solid fa-weight-scale fa-xs"></i> ওজন</div><div class="view-field-val">${d.weight?d.weight+' কেজি':'—'}</div></div>
+      <div class="view-field"><div class="view-field-label"><i class="fa-solid fa-calendar-days fa-xs"></i> শেষ দান</div><div class="view-field-val">${d.lastDonation||'অজানা'}</div></div>
+      <div class="view-field"><div class="view-field-label"><i class="fa-solid fa-award fa-xs"></i> মোট দান</div><div class="view-field-val">${d.donationCount||0} বার</div></div>
+    </div>
+    <div class="view-cd">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
+        <span style="font-size:.72rem;color:var(--txt-d);font-weight:600;text-transform:uppercase">৯০ দিন কুলডাউন — ${pct}%</span>
+        <span class="cd-pill ${mp}"><i class="fa-solid fa-circle fa-xs"></i> ${mt}</span>
+      </div>
+      <div class="cd-bar-bg"><div class="cd-bar ${bc}" style="width:${pct}%"></div></div>
+      <div class="cd-days" style="${dclr};margin-top:.3rem">${dtext}</div>
+      ${c.next?`<div style="font-size:.72rem;color:var(--txt-d);margin-top:.2rem">পরবর্তী যোগ্যতা: <strong>${c.next}</strong></div>`:''}
+    </div>
+    <div class="view-actions" style="border-top:none;padding-top:0;margin-top:0">
+      ${actions}
+      <button class="btn-cancel" style="flex:none;width:100%;margin-top:.3rem" onclick="closeM('m-view')"><i class="fa-solid fa-xmark"></i> বন্ধ করুন</button>
+    </div>`;
+  openM('m-view');
+};
+
+/* ══════ UPDATE LAST DONATION INLINE ══════ */
+window.updateLD = async function(id, val) {
+  if (!val) return;
+  try {
+    await update(ref(db, 'donors/' + id), { lastDonation: val });
+    toast('তারিখ আপডেট হয়েছে', 'ok');
+  } catch(e) { toast(e.message, 'err'); }
+};
+
+/* ══════ DONATE RECORD MODAL ══════ */
+window.openDonate = function(id) {
+  const d = donors.find(x => x.id === id); if (!d) return;
+  document.getElementById('rd-id').value = id;
+  const c = cd(d);
+  document.getElementById('rd-info').innerHTML = `
+    <strong style="font-size:1rem">${d.name}</strong> — <strong>${d.blood}</strong><br>
+    <i class="fa-solid fa-location-dot fa-xs"></i> ${d.district} &nbsp;|&nbsp; <i class="fa-solid fa-phone fa-xs"></i> ${d.phone}<br>
+    <br>শেষ রক্তদান: <strong>${d.lastDonation||'অজানা'}</strong><br>
+    পরবর্তী যোগ্যতা: <strong>${c.next||'—'}</strong> &nbsp; ${pillHtml(c)}`;
+  document.getElementById('rd-date').value = today();
+  openM('m-don');
+};
+window.recordDon = async function() {
+  const id  = document.getElementById('rd-id').value;
+  const dt  = document.getElementById('rd-date').value;
+  if (!dt) { toast('তারিখ নির্বাচন করুন', 'warn'); return; }
+  const d   = donors.find(x => x.id === id); if (!d) return;
+  const btn = document.querySelector('#m-don .btn-save');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> সংরক্ষণ হচ্ছে...'; }
+  try {
+    const newCount = (parseInt(d.donationCount) || 0) + 1;
+    await update(ref(db, 'donors/' + id), { lastDonation: dt, donationCount: newCount });
+    // atomic server-side increment
+    await update(ref(db, 'stats'), { totalDonations: increment(1) });
+    closeM('m-don');
+    toast(`${d.name}-এর রক্তদান রেকর্ড! অভিজ্ঞতা: ${newCount} বার 🎉`, 'ok');
+  } catch(e) { toast(e.message, 'err'); }
+  finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> নিশ্চিত করুন'; }
+  }
+};
+
+/* ══════ ADD / EDIT ══════ */
+window.openAdd = function() {
+  document.getElementById('m-title').innerHTML = isAdmin
+    ? '<i class="fa-solid fa-droplet"></i> নতুন ডোনার যোগ করুন'
+    : '<i class="fa-solid fa-droplet"></i> ডোনার হিসেবে নিবন্ধন করুন';
+  document.getElementById('eid').value = '';
+  ['fn','fg-b','fa','fp','fd','fad','fld','fdob','fw'].forEach(x => { const el=document.getElementById(x); if(el) el.value=''; });
+  document.getElementById('fexp').value = '0';
+  document.getElementById('age-show').innerHTML = '<i class="fa-solid fa-circle-info fa-xs"></i> বয়স স্বয়ংক্রিয়ভাবে হিসাব হবে';
+  openM('m-donor');
+};
+window.openEdit = function(id) {
+  const d = donors.find(x => x.id === id); if (!d) return;
+  document.getElementById('m-title').innerHTML = isAdmin
+    ? '<i class="fa-solid fa-pen-to-square"></i> ডোনার সম্পাদনা করুন'
+    : '<i class="fa-solid fa-pen-to-square"></i> তথ্য সম্পাদনার অনুরোধ';
+  document.getElementById('eid').value   = id;
+  document.getElementById('fn').value    = d.name     || '';
+  document.getElementById('fg-b').value  = d.blood    || '';
+  document.getElementById('fa').value    = d.age      || '';
+  document.getElementById('fp').value    = d.phone    || '';
+  document.getElementById('fd').value    = d.district || '';
+  document.getElementById('fad').value   = d.address  || '';
+  document.getElementById('fld').value   = d.lastDonation || '';
+  document.getElementById('fexp').value  = d.donationCount !== undefined ? d.donationCount : 0;
+  document.getElementById('fdob').value  = d.dob || '';
+  document.getElementById('fw').value    = d.weight || '';
+  if (d.dob) calcAge(d.dob);
+  openM('m-donor');
+};
+window.saveDonor = async function() {
+  const btn  = document.getElementById('bsave');
+  const id   = document.getElementById('eid').value;
+  const name = document.getElementById('fn').value.trim();
+  const blood= document.getElementById('fg-b').value;
+  const age  = document.getElementById('fa').value;
+  const phone= document.getElementById('fp').value.trim();
+  const dist = document.getElementById('fd').value.trim();
+  const dob  = document.getElementById('fdob').value;
+  const wt   = document.getElementById('fw').value;
+  if (!name||!blood||!dob||!wt||!phone||!dist) { toast('সব * ঘর পূরণ করুন', 'warn'); return; }
+  if (parseInt(wt) < 45) { toast('ওজন কমপক্ষে ৪৫ কেজি হতে হবে', 'warn'); return; }
+  if (parseInt(age) < 18 || parseInt(age) > 65) { toast('বয়স ১৮–৬৫ বছরের মধ্যে হতে হবে', 'warn'); return; }
+  btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> সংরক্ষণ হচ্ছে...';
+  const payload = {
+    name, blood, age:parseInt(age), phone, district:dist,
+    address: document.getElementById('fad').value.trim(),
+    dob: document.getElementById('fdob').value || null,
+    weight: parseInt(document.getElementById('fw').value) || null,
+    lastDonation: document.getElementById('fld').value || null,
+    donationCount: parseInt(document.getElementById('fexp').value) || 0,
+    addedAt: id ? (donors.find(x=>x.id===id)?.addedAt||today()) : today()
+  };
+  try {
+    if (id) {
+      if (isAdmin) {
+        // admin edit → direct update, keep confirmed
+        await update(ref(db,'donors/'+id), payload);
+        toast('ডোনার আপডেট হয়েছে', 'ok');
+      } else {
+        // user edit → move to pending with original data reference
+        payload.originalId = id;
+        payload.submittedAt = today();
+        payload.editRequest = true;
+        await push(pendingRef, payload);
+        toast('সম্পাদনার অনুরোধ পাঠানো হয়েছে — অ্যাডমিন অনুমোদনের পর আপডেট হবে', 'ok');
+      }
+    } else {
+      if (isAdmin) {
+        // admin add → direct to confirmed
+        await push(dbRef, payload);
+        toast('নতুন ডোনার যোগ হয়েছে', 'ok');
+      } else {
+        // user add → goes to pending
+        payload.submittedAt = today();
+        await push(pendingRef, payload);
+        toast('ডোনার যোগের অনুরোধ পাঠানো হয়েছে — অ্যাডমিন অনুমোদনের পর দেখা যাবে', 'ok');
+      }
+    }
+    closeM('m-donor');
+  } catch(e) { toast(e.message, 'err'); }
+  btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ করুন';
+};
+
+
+/* ══════ APPROVE / REJECT PENDING ══════ */
+window.approveDonor = async function(pid) {
+  const p = pending.find(x => x.id === pid); if (!p) return;
+  // disable all approve/reject buttons for this pending item
+  document.querySelectorAll(`[onclick*="approveDonor('${pid}')"], [onclick*="rejectDonor('${pid}')"]`).forEach(b => {
+    b.dataset.loading = 'true';
+    if (b.classList.contains('drow-btn-ok')) b.innerHTML = '<i class="fa-solid fa-spinner"></i>';
+  });
+  try {
+    if (p.editRequest && p.originalId) {
+      const { id, originalId, submittedAt, editRequest, ...data } = p;
+      await update(ref(db, 'donors/' + originalId), data);
+      toast(p.name + '-এর তথ্য আপডেট অনুমোদিত হয়েছে ✓', 'ok');
+    } else {
+      const { id, submittedAt, ...data } = p;
+      data.approvedAt = today();
+      await push(dbRef, data);
+      toast(p.name + '-কে অনুমোদন দেওয়া হয়েছে ✓', 'ok');
+    }
+    await remove(ref(db, 'pendingDonors/' + pid));
+  } catch(e) {
+    toast(e.message, 'err');
+    document.querySelectorAll(`[onclick*="${pid}"]`).forEach(b => {
+      b.dataset.loading = 'false';
+      if (b.classList.contains('drow-btn-ok')) b.innerHTML = '<i class="fa-solid fa-check"></i>';
+    });
+  }
+};
+
+window.rejectDonor = async function(pid) {
+  const p = pending.find(x => x.id === pid); if (!p) return;
+  const label = p.editRequest ? 'সম্পাদনার অনুরোধটি' : '"' + p.name + '"-এর আবেদনটি';
+  if (!confirm(label + ' বাতিল করবেন?')) return;
+  document.querySelectorAll(`[onclick*="rejectDonor('${pid}')"]`).forEach(b => {
+    b.dataset.loading = 'true';
+    b.innerHTML = '<i class="fa-solid fa-spinner"></i>';
+  });
+  try {
+    await remove(ref(db, 'pendingDonors/' + pid));
+    toast('অনুরোধ বাতিল করা হয়েছে', 'ok');
+  } catch(e) {
+    toast(e.message, 'err');
+    document.querySelectorAll(`[onclick*="rejectDonor('${pid}')"]`).forEach(b => {
+      b.dataset.loading = 'false'; b.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+    });
+  }
+};
+
+/* ══════ CLEAR REQUEST FILTERS ══════ */
+window.clearReqFilters = function() {
+  const df = document.getElementById('req-date-from');
+  if (df) df.value = '';
+  const sf = document.getElementById('req-status-filter');
+  if (sf) sf.value = 'all';
+  renderSection('requests');
+};
+
+/* ══════ COMPACT REQUEST ROW (admin list) ══════ */
+function requestCompactRow(r) {
+  const donor = donors.find(d => d.id === r.donorId);
+  const statusCls = r.status === 'accepted' ? 'rs-accepted' : r.status === 'rejected' ? 'rs-rejected' : r.status === 'donated' ? 'rs-donated' : 'rs-pending';
+  const statusTxt = r.status === 'accepted' ? '✓ একসেপ্ট' : r.status === 'rejected' ? '✗ বাতিল' : r.status === 'donated' ? '✅ সম্পন্ন' : '⏳ অপেক্ষমাণ';
+  const isAccepted = r.status === 'accepted';
+  const isDone     = r.status === 'donated';
+
+  const avatarCls = isDone ? 'done' : isAccepted ? 'acc' : '';
+  const avatarIcon = isDone ? 'circle-check' : isAccepted ? 'droplet' : 'hand-holding-medical';
+
+  return `
+  <div class="req-row">
+    <div class="req-row-avatar ${avatarCls}">
+      <i class="fa-solid fa-${avatarIcon}"></i>
+    </div>
+    <div class="req-row-info">
+      <div class="req-row-name">${r.requesterName||'অজানা'}</div>
+      <div class="req-row-meta">
+        <span class="req-row-tag"><i class="fa-solid fa-phone"></i>${r.requesterPhone||'—'}</span>
+        <span class="req-row-tag"><i class="fa-solid fa-calendar fa-xs" style="color:var(--txt-d)"></i>${r.submittedAt||'—'}</span>
+        ${donor ? `<span class="req-row-tag"><i class="fa-solid fa-droplet" style="color:var(--red)"></i>${donor.blood||'?'} · ${donor.name||'—'}</span>` : ''}
+      </div>
+    </div>
+    <div class="req-row-right">
+      <span class="rcard-status ${statusCls}" style="font-size:.65rem">${statusTxt}</span>
+      <button class="req-view-btn" onclick="openRequestPopup('${r.id}')">
+        <i class="fa-solid fa-eye"></i> ভিউ
+      </button>
+    </div>
+  </div>`;
+}
+
+/* ══════ REQUEST POPUP (admin detail) ══════ */
+window.openRequestPopup = function(rid) {
+  const r = requests.find(x => x.id === rid); if (!r) return;
+  const donor = donors.find(d => d.id === r.donorId);
+  const statusCls = r.status === 'accepted' ? 'rs-accepted' : r.status === 'rejected' ? 'rs-rejected' : r.status === 'donated' ? 'rs-donated' : 'rs-pending';
+  const statusTxt = r.status === 'accepted' ? '✓ একসেপ্ট করা হয়েছে' : r.status === 'rejected' ? '✗ বাতিল করা হয়েছে' : r.status === 'donated' ? '✅ দান সম্পন্ন' : '⏳ অপেক্ষমাণ';
+  const isPending  = r.status === 'pending';
+  const isAccepted = r.status === 'accepted';
+  const isDone     = r.status === 'donated';
+  const isRejected = r.status === 'rejected';
+
+  // Action buttons
+  let actionBtns = '';
+  if (isPending) {
+    actionBtns = `
+      <button class="ract ract-ok" onclick="updateRequestStatus('${r.id}','accepted');closeRequestPopup()"><i class="fa-solid fa-circle-check"></i> একসেপ্ট করুন</button>
+      <button class="ract ract-x" onclick="updateRequestStatus('${r.id}','rejected');closeRequestPopup()"><i class="fa-solid fa-xmark"></i> বাতিল করুন</button>`;
+  } else if (isAccepted && donor) {
+    actionBtns = `
+      <button class="ract ract-donate-done" onclick="completeDonation('${r.id}','${donor.id}');closeRequestPopup()"><i class="fa-solid fa-droplet"></i> দান হয়েছে ✓</button>
+      <button class="ract ract-x" onclick="updateRequestStatus('${r.id}','rejected');closeRequestPopup()"><i class="fa-solid fa-xmark"></i> বাতিল করুন</button>`;
+  } else if (isDone || isRejected) {
+    actionBtns = `
+      <button class="ract" style="border-color:rgba(26,138,90,.35);color:var(--green)" onclick="showInvoice('${r.id}');closeRequestPopup()"><i class="fa-solid fa-file-invoice"></i> ইনভয়েস</button>
+      ${isRejected ? `<button class="ract" style="border-color:rgba(229,57,53,.2);color:#E53935" onclick="deleteRequest('${r.id}');closeRequestPopup()"><i class="fa-solid fa-trash-can"></i> মুছুন</button>` : ''}`;
+  }
+  // Call buttons
+  const callBtns = `
+    ${donor && donor.phone ? `<button class="ract ract-call" onclick="window.open('tel:${donor.phone}')"><i class="fa-solid fa-phone"></i> ডোনারকে কল</button>` : ''}
+    <button class="ract" style="border-color:rgba(26,138,90,.35);color:var(--green)" onclick="window.open('tel:${r.requesterPhone}')"><i class="fa-solid fa-phone"></i> আবেদনকারীকে কল</button>
+    ${donor ? `<button class="ract" style="border-color:rgba(21,101,192,.25);color:var(--blue)" onclick="viewDonorDetail('${donor.id}');closeRequestPopup()"><i class="fa-solid fa-eye"></i> ডোনার দেখুন</button>` : ''}`;
+
+  const html = `
+  <div class="req-popup-overlay" id="req-popup-overlay" onclick="if(event.target===this)closeRequestPopup()">
+    <div class="req-popup">
+      <div class="req-popup-head">
+        <div class="req-popup-title"><i class="fa-solid fa-hand-holding-medical" style="color:var(--green)"></i> আবেদনের বিবরণ</div>
+        <button class="req-popup-close" onclick="closeRequestPopup()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="req-popup-body">
+        <span class="req-popup-status rcard-status ${statusCls}">${statusTxt}</span>
+        <div class="req-popup-section">
+          <div class="req-popup-section-title"><i class="fa-solid fa-user fa-xs"></i> আবেদনকারীর তথ্য</div>
+          <div class="req-popup-field"><i class="fa-solid fa-user"></i><span><strong>${r.requesterName||'—'}</strong></span></div>
+          <div class="req-popup-field"><i class="fa-solid fa-phone"></i><span>${r.requesterPhone||'—'}</span></div>
+          <div class="req-popup-field"><i class="fa-solid fa-location-dot"></i><span>${r.location||'—'}</span></div>
+          ${r.message ? `<div class="req-popup-field"><i class="fa-solid fa-comment"></i><span>${r.message}</span></div>` : ''}
+          <div class="req-popup-field"><i class="fa-solid fa-calendar"></i><span>আবেদনের তারিখ: <strong>${r.submittedAt||'—'}</strong></span></div>
+        </div>
+        ${donor ? `
+        <div class="req-popup-section">
+          <div class="req-popup-section-title"><i class="fa-solid fa-droplet fa-xs"></i> ডোনারের তথ্য</div>
+          <div class="req-popup-field"><i class="fa-solid fa-user"></i><span><strong>${donor.name||'—'}</strong></span></div>
+          <div class="req-popup-field"><i class="fa-solid fa-droplet" style="color:var(--red)"></i><span style="font-weight:800;color:var(--red)">${donor.blood||'?'}</span></div>
+          <div class="req-popup-field"><i class="fa-solid fa-location-dot"></i><span>${donor.district||'—'}${donor.address?', '+donor.address:''}</span></div>
+          <div class="req-popup-field"><i class="fa-solid fa-phone"></i><span>${donor.phone||'—'}</span></div>
+          <div class="req-popup-field"><i class="fa-solid fa-award"></i><span>মোট দান: <strong>${donor.donationCount||0} বার</strong></span></div>
+        </div>` : `<div class="req-popup-section" style="color:var(--txt-d);font-size:.82rem"><i class="fa-solid fa-circle-exclamation" style="color:var(--amber)"></i> ডোনারের তথ্য পাওয়া যায়নি</div>`}
+        <div class="req-popup-actions">
+          ${callBtns}
+          ${actionBtns}
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  // Remove existing popup if any
+  const existing = document.getElementById('req-popup-overlay');
+  if (existing) existing.remove();
+  document.body.insertAdjacentHTML('beforeend', html);
+};
+
+window.closeRequestPopup = function() {
+  const el = document.getElementById('req-popup-overlay');
+  if (el) el.remove();
+};
+
+/* ══════ REQUEST ROW (admin view) ══════ */
+function requestRow(r) {
+  const donor = donors.find(d => d.id === r.donorId);
+  const statusCls = r.status === 'accepted' ? 'rs-accepted' : r.status === 'rejected' ? 'rs-rejected' : r.status === 'donated' ? 'rs-donated' : 'rs-pending';
+  const statusTxt = r.status === 'accepted' ? '✓ একসেপ্ট' : r.status === 'rejected' ? '✗ বাতিল' : r.status === 'donated' ? '✅ দান সম্পন্ন' : '⏳ অপেক্ষমাণ';
+  const isPending  = r.status === 'pending';
+  const isAccepted = r.status === 'accepted';
+  const isDone     = r.status === 'donated';
+  const isRejected = r.status === 'rejected';
+
+  // Row 1: Call buttons
+  const row1 = `
+    <div class="ract-row">
+      ${donor && donor.phone ? `
+        <button class="ract ract-call" onclick="window.open('tel:${donor.phone}')">
+          <i class="fa-solid fa-phone"></i> ডোনারকে কল
+        </button>` : ''}
+      <button class="ract" style="border-color:rgba(26,138,90,.35);color:var(--green)"
+        onclick="window.open('tel:${r.requesterPhone}')">
+        <i class="fa-solid fa-phone"></i> আবেদনকারীকে কল
+      </button>
+      ${donor ? `
+        <button class="ract" style="border-color:rgba(21,101,192,.25);color:var(--blue)"
+          onclick="viewDonorDetail('${donor.id}')">
+          <i class="fa-solid fa-eye"></i> ডোনার দেখুন
+        </button>` : ''}
+    </div>`;
+
+  // Row 2: Action buttons
+  let row2Btns = '';
+  if (isPending) {
+    row2Btns = `
+      <button class="ract ract-ok" onclick="updateRequestStatus('${r.id}','accepted')">
+        <i class="fa-solid fa-circle-check"></i> একসেপ্ট করুন
+      </button>
+      <button class="ract ract-x" onclick="updateRequestStatus('${r.id}','rejected')">
+        <i class="fa-solid fa-xmark"></i> বাতিল করুন
+      </button>`;
+  }
+  if (isAccepted && donor) {
+    row2Btns = `
+      <button class="ract ract-donate-done" onclick="completeDonation('${r.id}','${donor.id}')">
+        <i class="fa-solid fa-droplet"></i> দান হয়েছে ✓
+      </button>
+      <button class="ract ract-x" onclick="updateRequestStatus('${r.id}','rejected')">
+        <i class="fa-solid fa-xmark"></i> বাতিল করুন
+      </button>`;
+  }
+  if (isDone || isRejected) {
+    row2Btns = `
+      <button class="ract" style="border-color:rgba(26,138,90,.35);color:var(--green)"
+        onclick="showInvoice('${r.id}')">
+        <i class="fa-solid fa-file-invoice"></i> ইনভয়েস
+      </button>
+      <button class="ract" style="border-color:rgba(229,57,53,.2);color:#E53935"
+        onclick="deleteRequest('${r.id}')">
+        <i class="fa-solid fa-trash-can"></i> মুছুন
+      </button>`;
+  }
+
+  const row2 = row2Btns ? `<div class="ract-row">${row2Btns}</div>` : '';
+
+  return `
+  <div class="rcard" id="rcard-${r.id}">
+    <div class="rcard-head">
+      <div class="rcard-avatar" style="${isDone?'background:linear-gradient(135deg,var(--green),#0D6040)':isAccepted?'background:linear-gradient(135deg,var(--red),var(--red-d));animation:heartbeat 1.5s ease-in-out infinite':''}">
+        <i class="fa-solid fa-${isDone?'circle-check':isAccepted?'droplet':'hand-holding-medical'}"></i>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div class="rcard-name">${r.requesterName||'অজানা'}</div>
+        <div class="rcard-sub">
+          <i class="fa-solid fa-phone fa-xs"></i> ${r.requesterPhone||'—'}
+          &nbsp;|&nbsp;<i class="fa-solid fa-calendar fa-xs"></i> ${r.submittedAt||'—'}
+        </div>
+      </div>
+      <span class="rcard-status ${statusCls}">${statusTxt}</span>
+    </div>
+
+    <div class="rcard-fields">
+      <div class="rfield">
+        <i class="fa-solid fa-droplet"></i>
+        <span><strong>ডোনার:</strong>
+          ${donor
+            ? `<strong>${donor.name}</strong> <span style="font-family:'Fira Code',monospace;color:var(--red);font-weight:700">(${donor.blood})</span>`
+            : `<span style="color:var(--txt-d)">অজানা</span>`}
+        </span>
+      </div>
+      <div class="rfield"><i class="fa-solid fa-location-dot"></i><span><strong>হাসপাতাল:</strong> ${r.location||'উল্লেখ নেই'}</span></div>
+      ${r.message ? `<div class="rfield"><i class="fa-solid fa-message"></i><span>${r.message}</span></div>` : ''}
+    </div>
+
+    ${donor ? `
+    <div style="background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:.5rem .8rem;margin-bottom:.7rem;display:flex;align-items:center;gap:.5rem;font-size:.8rem;flex-wrap:wrap">
+      <i class="fa-solid fa-user-check" style="color:var(--green);font-size:.85rem"></i>
+      <span><strong>${donor.name}</strong></span>
+      <span style="font-family:'Fira Code',monospace;color:var(--red);font-weight:700">${donor.blood}</span>
+      <span style="color:var(--txt-d)">•</span>
+      <span>📞 <strong style="font-family:'Fira Code',monospace">${donor.phone}</strong></span>
+      <span style="color:var(--txt-d)">•</span>
+      <span>দান: <strong>${donor.donationCount||0}</strong> বার ${expBadgeHtml(donor.donationCount||0)}</span>
+    </div>` : ''}
+
+    <div class="rcard-action-wrap">
+      ${row1}
+      ${row2}
+    </div>
+  </div>`;
+}
+
+/* ══════ OPEN REQUEST MODAL (public) ══════ */
+window.openRequestModal = function(donorId) {
+  const d = donors.find(x => x.id === donorId);
+  if (!d) return;
+  document.getElementById('req-donor-id').value = donorId;
+  document.getElementById('req-donor-info').innerHTML = `
+    <strong style="font-size:1rem">${d.name}</strong> — <strong>${d.blood}</strong><br>
+    <i class="fa-solid fa-location-dot fa-xs"></i> ${d.district}${d.address?', '+d.address:''}<br>
+    ${pillHtml(cd(d))}`;
+  document.getElementById('req-name').value     = '';
+  document.getElementById('req-phone').value    = '';
+  document.getElementById('req-location').value = '';
+  document.getElementById('req-msg').value      = '';
+  openM('m-request');
+};
+
+/* ══════ SUBMIT REQUEST ══════ */
+window.submitRequest = async function() {
+  const btn      = document.getElementById('req-save-btn');
+  const donorId  = document.getElementById('req-donor-id').value;
+  const name     = document.getElementById('req-name').value.trim();
+  const phone    = document.getElementById('req-phone').value.trim();
+  const location = document.getElementById('req-location').value.trim();
+  const message  = document.getElementById('req-msg').value.trim();
+  if (!name || !phone || !location) { toast('নাম, ফোন ও হাসপাতাল আবশ্যক', 'warn'); return; }
+  // basic phone validation
+  if (!/^01[3-9]\d{8}$/.test(phone.replace(/\s|-/g,''))) {
+    toast('সঠিক বাংলাদেশি ফোন নম্বর দিন', 'warn'); return;
+  }
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> পাঠানো হচ্ছে...';
+  try {
+    await push(reqRef, {
+      donorId,
+      requesterName:  name,
+      requesterPhone: phone,
+      location,
+      message:        message || null,
+      status:         'pending',
+      submittedAt:    today()
+    });
+    closeM('m-request');
+    toast('আবেদন পাঠানো হয়েছে! অ্যাডমিন যোগাযোগ করবেন 🙏', 'ok');
+  } catch(e) { toast(e.message, 'err'); }
+  btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> আবেদন পাঠান';
+};
+
+/* ══════ UPDATE REQUEST STATUS (admin) ══════ */
+window.updateRequestStatus = async function(rid, status) {
+  const lbl = status === 'accepted' ? 'একসেপ্ট' : 'বাতিল';
+  try {
+    if (status === 'rejected') {
+      // Cancel before accept → delete immediately
+      const r = requests.find(x => x.id === rid);
+      if (r && r.status === 'pending') {
+        if (!confirm('এই আবেদনটি বাতিল করে মুছে ফেলবেন?')) return;
+        await remove(ref(db, 'bloodRequests/' + rid));
+        toast('আবেদন বাতিল ও মুছে ফেলা হয়েছে', 'ok');
+        return;
+      }
+      // accepted → rejected: just update status (shouldn't happen but fallback)
+      await update(ref(db, 'bloodRequests/' + rid), { status, resolvedAt: today() });
+    } else {
+      await update(ref(db, 'bloodRequests/' + rid), { status, resolvedAt: today() });
+    }
+    toast(`আবেদন ${lbl} করা হয়েছে`, 'ok');
+  } catch(e) { toast(e.message, 'err'); }
+};
+
+/* ══════ COMPLETE DONATION FROM REQUEST ══════ */
+window.completeDonation = async function(rid, donorId) {
+  const r = requests.find(x => x.id === rid);
+  const d = donors.find(x => x.id === donorId);
+  if (!d) { toast('ডোনার পাওয়া যায়নি', 'err'); return; }
+  if (!confirm(`"${d.name}"-এর রক্তদান সম্পন্ন হিসেবে চিহ্নিত করবেন?\n\n✅ শেষ দানের তারিখ আজকের তারিখে সেট হবে\n✅ ৯০ দিনের কুলডাউন শুরু হবে\n✅ অভিজ্ঞতা ১ বেড়ে যাবে`)) return;
+
+  const newCount    = (parseInt(d.donationCount) || 0) + 1;
+  const donationDate = today();
+
+  // Disable the button to prevent double-click
+  const btn = document.querySelector(`#rcard-${rid} .ract[onclick*="completeDonation"]`);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> সংরক্ষণ হচ্ছে...'; }
+
+  try {
+    // 1. Update donor: set lastDonation=today, increment donationCount
+    await update(ref(db, 'donors/' + donorId), {
+      lastDonation:  donationDate,
+      donationCount: newCount
+    });
+    // 2. Update global stats: totalDonations++
+    await update(ref(db, 'stats'), { totalDonations: increment(1) });
+    // 3. Mark request as donated
+    await update(ref(db, 'bloodRequests/' + rid), {
+      status:      'donated',
+      donatedAt:   donationDate,
+      resolvedAt:  donationDate
+    });
+    // 4. Invalidate cooldown cache for this donor
+    _cdCache.delete(donorId + '|' + (d.lastDonation || ''));
+    toast(`🎉 ${d.name}-এর রক্তদান সম্পন্ন! অভিজ্ঞতা: ${newCount} বার`, 'ok');
+  } catch(e) {
+    toast(e.message, 'err');
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-droplet"></i> দান হয়েছে ✓'; }
+  }
+};
+
+/* ══════ VIEW DONOR DETAIL from request card ══════ */
+window.viewDonorDetail = function(donorId) {
+  viewDonor(donorId, false);
+};
+
+/* ══════ DELETE REQUEST (admin) ══════ */
+window.deleteRequest = async function(rid) {
+  const r = requests.find(x => x.id === rid);
+  if (r && r.status === 'accepted') {
+    toast('একসেপ্ট করা আবেদন মুছে ফেলা যাবে না', 'warn');
+    return;
+  }
+  if (!confirm('এই আবেদনটি মুছে ফেলবেন?')) return;
+  try {
+    await remove(ref(db, 'bloodRequests/' + rid));
+    toast('আবেদন মুছে গেছে', 'ok');
+  } catch(e) { toast(e.message, 'err'); }
+};
+
+/* ══════ CACHE HELPERS ══════ */
+function clearDonorCache() {
+  try { localStorage.removeItem(CACHE_DONORS); localStorage.removeItem(CACHE_PENDING); } catch(e) {}
+  _donorsHash = ''; _pendingHash = '';
+  _cdCache.clear();
+}
+
+/* ══════ DELETE ══════ */
+window.delDonor = async function(id) {
+  const d = donors.find(x=>x.id===id);
+  if (!confirm(`"${d?.name}" কে মুছে ফেলবেন?`)) return;
+  try { clearDonorCache(); await remove(ref(db,'donors/'+id)); toast('ডোনার মুছে গেছে', 'ok'); }
+  catch(e) { toast(e.message, 'err'); }
+};
+
+/* ══════ FILTER ══════ */
+window.setF = function(btn) {
+  document.querySelectorAll('.chip').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  filterG = btn.dataset.g;
+  renderCards();
+};
+
+/* ══════ NAVIGATION ══════ */
+window.showPage = function(pg, btn) {
+  if (pg === 'admin' && !isAdmin) { openM('m-login'); return; }
+  const isDon = pg === 'donors';
+  document.getElementById('pg-donors').style.display    = isDon ? 'block' : 'none';
+  document.getElementById('pg-admin').style.display     = isDon ? 'none'  : 'block';
+  document.getElementById('hero-section').style.display = isDon ? 'block' : 'none';
+  // FAB সবসময় donors page-এ দেখা যাবে
+  const fab = document.getElementById('fab');
+  if (isDon) fab.classList.remove('fab-hidden');
+  else fab.classList.add('fab-hidden');
+  document.querySelectorAll('.hbtn[id^="nav"]').forEach(b => b.classList.remove('admin-active'));
+  if (!isDon) {
+    if (btn) btn.classList.add('admin-active');
+    renderAdminGrid();
+  } else {
+    renderCards();
+  }
+};
+
+/* ══════ AUTH — Firebase Email/Password ══════ */
+window.doLogin = async function() {
+  const email = document.getElementById('lemail').value.trim();
+  const pw    = document.getElementById('lpw').value;
+  const errEl = document.getElementById('lerr');
+  errEl.textContent = '';
+  if (!email||!pw) { errEl.textContent = 'ইমেইল ও পাসওয়ার্ড দিন'; return; }
+  const btn = document.querySelector('#m-login .btn-save');
+  btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> লগইন হচ্ছে...';
+  try {
+    await signInWithEmailAndPassword(auth, email, pw);
+    closeM('m-login');
+    document.getElementById('lpw').value = '';
+    document.getElementById('lemail').value = '';
+    // wait for onAuthStateChanged to set isAdmin=true, then navigate
+    setTimeout(() => {
+      showPage('admin', document.getElementById('nav-a'));
+    }, 300);
+    toast('অ্যাডমিন লগইন সফল', 'ok');
+  } catch(e) {
+    const msg = e.code==='auth/invalid-credential'||e.code==='auth/wrong-password'
+      ? 'ভুল ইমেইল বা পাসওয়ার্ড' : e.code==='auth/user-not-found'
+      ? 'এই ইমেইল নিবন্ধিত নয়' : e.code==='auth/too-many-requests'
+      ? 'অনেক চেষ্টা হয়েছে, একটু অপেক্ষা করুন' : 'লগইন ব্যর্থ হয়েছে';
+    errEl.textContent = msg;
+  }
+  btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-right-to-bracket"></i> লগইন করুন';
+};
+
+window.doLogout = async function() {
+  if (!confirm('অ্যাডমিন থেকে লগআউট করবেন?')) return;
+  await signOut(auth);
+  // FAB stays visible even after logout (users can still submit)
+  showPage('donors', document.getElementById('nav-d'));
+  toast('লগআউট সফল', 'ok');
+};
+
+window.cancelLogin = function() {
+  closeM('m-login');
+  document.getElementById('lerr').textContent='';
+  document.getElementById('lpw').value='';
+  document.getElementById('lemail').value='';
+};
+
+/* ══════ MODAL HELPERS — SLIDE TO CLOSE ══════ */
+window.openM = function(id) {
+  const overlay = document.getElementById(id);
+  if (!overlay) return;
+  overlay.classList.add('open');
+  // Setup slide-to-close on the modal inner element
+  const modal = overlay.querySelector('.modal');
+  if (modal) setupSlideToClose(overlay, modal, id);
+};
+window.closeM = function(id) {
+  const overlay = document.getElementById(id);
+  if (!overlay) return;
+  const modal = overlay.querySelector('.modal');
+  if (modal) {
+    modal.style.transition = 'transform .28s cubic-bezier(.4,0,.2,1)';
+    modal.style.transform  = 'translateY(110%)';
+    setTimeout(() => {
+      overlay.classList.remove('open');
+      modal.style.transform  = '';
+      modal.style.transition = '';
+    }, 260);
+  } else {
+    overlay.classList.remove('open');
+  }
+};
+
+function setupSlideToClose(overlay, modal, overlayId) {
+  if (window.innerWidth >= 600) return; // only on mobile
+  const handle = modal.querySelector('.modal-handle-wrap');
+  if (!handle) return;
+  // Remove old listeners by cloning
+  const newHandle = handle.cloneNode(true);
+  handle.parentNode.replaceChild(newHandle, handle);
+
+  let startY = 0, curY = 0, dragging = false;
+  function onStart(e) {
+    startY = e.touches ? e.touches[0].clientY : e.clientY;
+    curY   = startY;
+    dragging = true;
+    modal.style.transition = 'none';
+  }
+  function onMove(e) {
+    if (!dragging) return;
+    curY = e.touches ? e.touches[0].clientY : e.clientY;
+    const dy = Math.max(0, curY - startY);
+    modal.style.transform = `translateY(${dy}px)`;
+    overlay.style.background = `rgba(0,0,0,${Math.max(0, .45 - dy/600)})`;
+  }
+  function onEnd() {
+    if (!dragging) return;
+    dragging = false;
+    const dy = Math.max(0, curY - startY);
+    if (dy > 90) {
+      closeM(overlayId);
+    } else {
+      modal.style.transition = 'transform .22s cubic-bezier(.34,1.4,.64,1)';
+      modal.style.transform = '';
+      overlay.style.background = '';
+    }
+  }
+  newHandle.addEventListener('touchstart', onStart, {passive:true});
+  newHandle.addEventListener('touchmove',  onMove,  {passive:true});
+  newHandle.addEventListener('touchend',   onEnd);
+  newHandle.addEventListener('mousedown',  onStart);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup',   onEnd);
+}
+
+// Close on backdrop tap (not login)
+document.querySelectorAll('.overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o && o.id !== 'm-login') closeM(o.id); });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.overlay.open').forEach(o => { if (o.id !== 'm-login') closeM(o.id); });
+});
+
+/* ══════ INVOICE SYSTEM ══════ */
+let _invoiceRequest = null;
+window.showInvoice = function(rid) {
+  const r = requests.find(x => x.id === rid);
+  if (!r) return;
+  _invoiceRequest = r;
+  const donor  = donors.find(d => d.id === r.donorId);
+  const isDone = r.status === 'donated';
+  const invoiceNo = 'RB-' + rid.slice(-6).toUpperCase();
+  const statusColor   = isDone ? '#1A8A5A' : '#E53935';
+  const statusBg      = isDone ? 'rgba(26,138,90,.1)' : 'rgba(200,16,46,.08)';
+  const statusTxt     = isDone ? '✅ দান সম্পন্ন' : '✗ বাতিল করা হয়েছে';
+  const resolvedDate  = r.donatedAt || r.resolvedAt || '—';
+
+  document.getElementById('invoice-body').innerHTML = `
+  <div class="invoice-wrap" id="invoice-print">
+    <div class="invoice-logo-row">
+      <div class="invoice-logo-icon"><i class="fa-solid fa-droplet"></i></div>
+      <div>
+        <div class="invoice-logo-name">রক্তবন্ধন</div>
+        <div class="invoice-logo-sub">Blood Donor Network</div>
+      </div>
+      <div class="invoice-no">
+        <div style="font-weight:700;color:var(--txt)">${invoiceNo}</div>
+        <div>তারিখ: ${today()}</div>
+      </div>
+    </div>
+    <div class="invoice-status-banner" style="background:${statusBg};color:${statusColor};border:1.5px solid ${statusColor}33">
+      <i class="fa-solid fa-${isDone?'circle-check':'circle-xmark'}"></i>
+      <span style="font-size:.88rem">${statusTxt}</span>
+    </div>
+    <table class="invoice-table">
+      <tr><td>আবেদন ID</td><td style="font-family:'Fira Code',monospace">${invoiceNo}</td></tr>
+      <tr><td>আবেদনকারী</td><td>${r.requesterName||'—'}</td></tr>
+      <tr><td>আবেদনকারীর ফোন</td><td style="font-family:'Fira Code',monospace">${r.requesterPhone||'—'}</td></tr>
+      <tr><td>হাসপাতাল / অবস্থান</td><td>${r.location||'—'}</td></tr>
+      ${r.message ? `<tr><td>বার্তা</td><td>${r.message}</td></tr>` : ''}
+      <tr><td style="border-top:2px solid #EDE5E0;padding-top:.5rem">ডোনারের নাম</td><td>${donor?.name||'—'}</td></tr>
+      <tr><td>রক্তের গ্রুপ</td><td style="font-family:'Fira Code',monospace;font-weight:800;color:#C8102E">${donor?.blood||'—'}</td></tr>
+      <tr><td>ডোনারের জেলা</td><td>${donor?.district||'—'}</td></tr>
+      <tr><td>ডোনারের মোট দান</td><td>${donor?.donationCount||0} বার</td></tr>
+      <tr><td style="border-top:2px solid #EDE5E0;padding-top:.5rem">আবেদনের তারিখ</td><td>${r.submittedAt||'—'}</td></tr>
+      <tr><td>সম্পন্নের তারিখ</td><td>${resolvedDate}</td></tr>
+      <tr><td>চূড়ান্ত অবস্থা</td><td style="color:${statusColor};font-weight:800">${statusTxt}</td></tr>
+    </table>
+    <div class="invoice-footer-note">
+      রক্তবন্ধন — Blood Donor Network<br>
+      এই ইনভয়েসটি স্বয়ংক্রিয়ভাবে তৈরি হয়েছে। রক্তদানে অংশগ্রহণের জন্য আন্তরিক ধন্যবাদ। ❤️
+    </div>
+  </div>`;
+  openM('m-invoice');
+};
+
+window.printInvoice = function() {
+  const el = document.getElementById('invoice-print');
+  if (!el) return;
+  const r = _invoiceRequest;
+  if (!r) { toast('ইনভয়েস ডেটা পাওয়া যায়নি', 'err'); return; }
+  const donor      = donors.find(d => d.id === r.donorId);
+  const isDone     = r.status === 'donated';
+  const invoiceNo  = 'RB-' + r.id.slice(-6).toUpperCase();
+  const statusColor = isDone ? '#1A8A5A' : '#E53935';
+  const statusBg    = isDone ? 'rgba(26,138,90,.1)' : 'rgba(200,16,46,.08)';
+  const statusTxt   = isDone ? '✅ দান সম্পন্ন' : '✗ বাতিল করা হয়েছে';
+  const resolvedDate = r.donatedAt || r.resolvedAt || '—';
+  const msgRow = r.message ? `<tr><td>বার্তা</td><td>${r.message}</td></tr>` : '';
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8"/>
+<title>রক্তবন্ধন ইনভয়েস ${invoiceNo}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&family=Fira+Code:wght@500&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Serif Bengali',serif;background:#fff;color:#1C1412;padding:2rem;max-width:600px;margin:0 auto}
+.logo-row{display:flex;align-items:center;gap:.8rem;margin-bottom:1.2rem;padding-bottom:.8rem;border-bottom:3px solid #C8102E}
+.logo-icon{width:44px;height:44px;border-radius:12px;background:#C8102E;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.4rem;flex-shrink:0;font-weight:900;font-family:serif}
+.logo-name{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;color:#C8102E}
+.logo-sub{font-size:.68rem;color:#A89898}
+.inv-no{margin-left:auto;text-align:right;font-family:'Fira Code',monospace;font-size:.78rem;color:#6B5B5E}
+.status-banner{display:flex;align-items:center;gap:.5rem;padding:.7rem 1rem;border-radius:10px;margin-bottom:1.2rem;font-weight:700;font-size:.9rem}
+table{width:100%;border-collapse:collapse;margin:.6rem 0}
+td{padding:.45rem .5rem;border-bottom:1px solid #EDE5E0;font-size:.83rem;vertical-align:top}
+td:first-child{color:#A89898;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;width:42%;font-weight:600;white-space:nowrap}
+td:last-child{font-weight:600;color:#1C1412}
+.sep td{border-top:2px solid #C8102E22;padding-top:.6rem}
+.footer{font-size:.7rem;color:#A89898;text-align:center;margin-top:1.4rem;padding-top:.9rem;border-top:1px dashed #EDE5E0;line-height:1.8}
+@media print{body{padding:1rem}@page{margin:1.5cm;size:A4}}
+</style>
+</head>
+<body>
+<div class="logo-row">
+  <div class="logo-icon">❤</div>
+  <div>
+    <div class="logo-name">রক্তবন্ধন</div>
+    <div class="logo-sub">Blood Donor Network</div>
+  </div>
+  <div class="inv-no">
+    <div style="font-weight:700;color:#1C1412">${invoiceNo}</div>
+    <div>তারিখ: ${new Date().toISOString().split('T')[0]}</div>
+  </div>
+</div>
+<div class="status-banner" style="background:${statusBg};color:${statusColor};border:1.5px solid ${statusColor}44">
+  ${statusTxt}
+</div>
+<table>
+  <tr><td>আবেদন ID</td><td style="font-family:'Fira Code',monospace">${invoiceNo}</td></tr>
+  <tr><td>আবেদনকারী</td><td>${r.requesterName || '—'}</td></tr>
+  <tr><td>ফোন</td><td style="font-family:'Fira Code',monospace">${r.requesterPhone || '—'}</td></tr>
+  <tr><td>হাসপাতাল / অবস্থান</td><td>${r.location || '—'}</td></tr>
+  ${msgRow}
+  <tr class="sep"><td>ডোনারের নাম</td><td>${donor ? donor.name : '—'}</td></tr>
+  <tr><td>রক্তের গ্রুপ</td><td style="font-family:'Fira Code',monospace;font-weight:800;color:#C8102E">${donor ? donor.blood : '—'}</td></tr>
+  <tr><td>ডোনারের জেলা</td><td>${donor ? (donor.district || '—') : '—'}</td></tr>
+  <tr><td>মোট দান</td><td>${donor ? (donor.donationCount || 0) + ' বার' : '—'}</td></tr>
+  <tr class="sep"><td>আবেদনের তারিখ</td><td>${r.submittedAt || '—'}</td></tr>
+  <tr><td>সম্পন্নের তারিখ</td><td>${resolvedDate}</td></tr>
+  <tr><td>চূড়ান্ত অবস্থা</td><td style="color:${statusColor};font-weight:800">${statusTxt}</td></tr>
+</table>
+<div class="footer">রক্তবন্ধন — Blood Donor Network<br>রক্তদানে অংশগ্রহণের জন্য আন্তরিক ধন্যবাদ। ❤</div>
+</body>
+</html>`);
+  win.document.close();
+  win.onload = function() { win.focus(); win.print(); };
+}
+window.toggleTheme = function() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('theme-icon').className = isDark
+    ? 'fa-solid fa-circle-half-stroke' : 'fa-solid fa-moon';
+  localStorage.setItem('theme', isDark ? 'light' : 'dark');
+};
+const savedTheme = localStorage.getItem('theme') || 'light';
+document.documentElement.setAttribute('data-theme', savedTheme);
+if (savedTheme === 'dark') document.getElementById('theme-icon').className = 'fa-solid fa-moon';
+
+/* ══════ BKASH ══════ */
+const BKASH_NUMBER = '019********'; // ← এখানে আপনার বিকাশ নম্বর দিন
+document.addEventListener('DOMContentLoaded', () => {
+  const el = document.getElementById('bkash-display-num');
+  if (el) el.textContent = BKASH_NUMBER;
+});
+window.copyBkash = function() {
+  navigator.clipboard.writeText(BKASH_NUMBER.replace(/-/g,'')).then(() => {
+    const btn = document.querySelector('.bkash-copy-btn');
+    const ico = document.getElementById('bkash-copy-icon');
+    if (btn) { btn.style.background='#1A8A5A'; btn.innerHTML='<i class="fa-solid fa-check fa-xs"></i> কপি হয়েছে!'; }
+    setTimeout(() => {
+      if (btn) { btn.style.background=''; btn.innerHTML='<i class="fa-solid fa-copy fa-xs" id="bkash-copy-icon"></i> কপি করুন'; }
+    }, 2000);
+  }).catch(() => toast('কপি করা যায়নি — ম্যানুয়ালি নিন', 'warn'));
+};
+
+/* ══════ HELPERS ══════ */
+function today() { return new Date().toISOString().split('T')[0]; }
+
+window.calcAge = function(dob) {
+  if (!dob) return;
+  const b = new Date(dob);
+  const now = new Date();
+  let age = now.getFullYear() - b.getFullYear();
+  const m = now.getMonth() - b.getMonth();
+  if (m < 0 || (m===0 && now.getDate() < b.getDate())) age--;
+  document.getElementById('fa').value = age;
+  const el = document.getElementById('age-show');
+  if (!el) return;
+  if (age < 18)      el.innerHTML = '<i class="fa-solid fa-triangle-exclamation fa-xs" style="color:var(--red)"></i> বয়স ১৮ বছরের কম — রক্তদানে অযোগ্য';
+  else if (age > 65) el.innerHTML = '<i class="fa-solid fa-triangle-exclamation fa-xs" style="color:var(--amber)"></i> বয়স ৬৫ বছরের বেশি — নিয়ম অনুযায়ী অযোগ্য';
+  else               el.innerHTML = '<i class="fa-solid fa-circle-check fa-xs" style="color:var(--green)"></i> বয়স: <strong>' + age + ' বছর</strong> — রক্তদানে যোগ্য';
+};
+// setInterval removed — Firebase onValue handles real-time updates automatically
+
+/* ══ Safe init — runs after ALL functions are defined ══ */
+const debouncedRefresh = debounce(refreshAll, 80);
+
+(function initCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_DONORS);
+    if (!raw) return;
+    const cached = JSON.parse(raw);
+    if (Array.isArray(cached) && cached.length > 0) {
+      donors = cached;
+      refreshAll();
+      hideCover();
+    }
+  } catch(e) { console.warn('cache:', e.message); }
+})();
+</script>
+</body>
+</html>
