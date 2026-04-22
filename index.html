@@ -1345,7 +1345,7 @@ canvas{width:100%!important;max-height:220px}
     <div class="loader-icon"><i class="fa-solid fa-droplet"></i></div>
   </div>
   <div class="cover-txt">রক্তবন্ধন লোড হচ্ছে...</div>
-  <div class="cover-sub"></div>
+  <div class="cover-sub">Firebase সংযুক্ত হচ্ছে</div>
 </div>
 
 <!-- HEADER -->
@@ -1703,18 +1703,67 @@ canvas{width:100%!important;max-height:220px}
         </div>
         <div class="fg2">
           <div class="fg">
-            <label><i class="fa-solid fa-cake-candles fa-xs"></i> জন্ম তারিখ *</label>
-            <input id="fdob" type="date" onchange="calcAge(this.value)" max=""/>
+            <label><i class="fa-solid fa-cake-candles fa-xs"></i> জন্ম তারিখ * (দিন/মাস/বছর)</label>
+            <div style="display:flex;gap:.4rem">
+              <select id="fdob-d" style="flex:1" onchange="assembleDob()">
+                <option value="">দিন</option>
+              </select>
+              <select id="fdob-m" style="flex:1.2" onchange="assembleDob()">
+                <option value="">মাস</option>
+                <option value="01">জানুয়ারি</option><option value="02">ফেব্রুয়ারি</option>
+                <option value="03">মার্চ</option><option value="04">এপ্রিল</option>
+                <option value="05">মে</option><option value="06">জুন</option>
+                <option value="07">জুলাই</option><option value="08">আগস্ট</option>
+                <option value="09">সেপ্টেম্বর</option><option value="10">অক্টোবর</option>
+                <option value="11">নভেম্বর</option><option value="12">ডিসেম্বর</option>
+              </select>
+              <select id="fdob-y" style="flex:1.3" onchange="assembleDob()">
+                <option value="">বছর</option>
+              </select>
+            </div>
+            <input type="hidden" id="fdob"/>
             <small id="age-show"><i class="fa-solid fa-circle-info fa-xs"></i> বয়স স্বয়ংক্রিয়ভাবে হিসাব হবে</small>
           </div>
           <div class="fg"><label><i class="fa-solid fa-calendar fa-xs"></i> বয়স</label><input id="fa" type="number" placeholder="—" readonly style="background:var(--surf);cursor:not-allowed;opacity:.7"/></div>
         </div>
         <div class="fg"><label><i class="fa-solid fa-phone fa-xs"></i> ফোন নম্বর *</label><input id="fp" placeholder="০১XXXXXXXXX"/></div>
         <div class="fg2">
-          <div class="fg"><label><i class="fa-solid fa-location-dot fa-xs"></i> জেলা *</label><input id="fd" placeholder="যেমন: ঢাকা"/></div>
-          <div class="fg"><label><i class="fa-solid fa-map-pin fa-xs"></i> এলাকা</label><input id="fad" placeholder="থানা / এলাকা"/></div>
+          <div class="fg">
+            <label><i class="fa-solid fa-location-dot fa-xs"></i> জেলা *</label>
+            <select id="fd" onchange="loadThana()">
+              <option value="">-- জেলা নির্বাচন করুন --</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label><i class="fa-solid fa-map-pin fa-xs"></i> থানা / উপজেলা</label>
+            <select id="fad" onchange="void(0)">
+              <option value="">-- আগে জেলা বাছুন --</option>
+            </select>
+          </div>
         </div>
-        <div class="fg"><label><i class="fa-solid fa-calendar-days fa-xs"></i> শেষ রক্তদানের তারিখ</label><input id="fld" type="date"/><small><i class="fa-solid fa-circle-info fa-xs"></i> এই তারিখ থেকে ৯০ দিন পর পুনরায় দান করা যাবে</small></div>
+        <div class="fg"><label><i class="fa-solid fa-house fa-xs"></i> গ্রাম / এলাকা</label><input id="fvil" placeholder="গ্রাম বা মহল্লার নাম (ঐচ্ছিক)"/></div>
+        <div class="fg">
+          <label><i class="fa-solid fa-calendar-days fa-xs"></i> শেষ রক্তদানের তারিখ (দিন/মাস/বছর)</label>
+          <div style="display:flex;gap:.4rem">
+            <select id="fld-d" style="flex:1" onchange="assembleLastDon()">
+              <option value="">দিন</option>
+            </select>
+            <select id="fld-m" style="flex:1.2" onchange="assembleLastDon()">
+              <option value="">মাস</option>
+              <option value="01">জানুয়ারি</option><option value="02">ফেব্রুয়ারি</option>
+              <option value="03">মার্চ</option><option value="04">এপ্রিল</option>
+              <option value="05">মে</option><option value="06">জুন</option>
+              <option value="07">জুলাই</option><option value="08">আগস্ট</option>
+              <option value="09">সেপ্টেম্বর</option><option value="10">অক্টোবর</option>
+              <option value="11">নভেম্বর</option><option value="12">ডিসেম্বর</option>
+            </select>
+            <select id="fld-y" style="flex:1.3" onchange="assembleLastDon()">
+              <option value="">বছর</option>
+            </select>
+          </div>
+          <input type="hidden" id="fld"/>
+          <small><i class="fa-solid fa-circle-info fa-xs"></i> এই তারিখ থেকে ৯০ দিন পর পুনরায় দান করা যাবে</small>
+        </div>
         <div class="fg">
           <label><i class="fa-solid fa-award fa-xs"></i> মোট রক্তদান সংখ্যা</label>
           <div class="exp-counter">
@@ -1804,7 +1853,7 @@ canvas{width:100%!important;max-height:220px}
           <text x="50" y="67" font-family="Arial" font-size="42" font-weight="900" fill="white" text-anchor="middle">b</text>
         </svg>
       </div>
-      <div class="bkash-title">বিকাশে সাহায্য করুন। (সাহায্য বর্তমানে বন্ধ আছে)</div>
+      <div class="bkash-title">বিকাশে সহায়তা করুন</div>
       <div class="bkash-sub">আপনার ছোট্ট সহায়তা একজনের জীবন বাঁচাতে পারে</div>
     </div>
     <div class="bkash-body">
@@ -1961,6 +2010,12 @@ onValue(pendingRef, snap => {
   const raw = [];
   const d   = snap.val();
   if (d) Object.entries(d).forEach(([id, v]) => raw.push({ id, ...v }));
+
+  // If any item in raw is currently being processed (approved/rejected),
+  // skip this snapshot — our local state is already up-to-date
+  const hasProcessing = raw.some(x => _processingPids.has(x.id));
+  if (hasProcessing) return;
+
   const h = quickHash(raw);
   if (h === _pendingHash) return;
   _pendingHash = h;
@@ -2025,8 +2080,25 @@ setTimeout(hideCover, 5000);
 
 function setFB(ok) {
   document.getElementById('fb-dot').className = 'fb-dot' + (ok ? '' : ' off');
-  document.getElementById('fb-txt').textContent = ok ? 'Live ●' : 'সংযোগ নেই';
+  document.getElementById('fb-txt').textContent = ok ? 'Firebase ●' : 'সংযোগ নেই';
 }
+
+/* ══════ TOAST ══════ */
+let _toastTimer = null;
+window.toast = function(msg, type='ok') {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  clearTimeout(_toastTimer);
+  el.className = '';
+  el.innerHTML = (type==='ok'  ? '<i class="fa-solid fa-circle-check fa-sm"></i> '
+                : type==='err' ? '<i class="fa-solid fa-circle-xmark fa-sm"></i> '
+                :                '<i class="fa-solid fa-triangle-exclamation fa-sm"></i> ') + msg;
+  void el.offsetWidth; // force reflow
+  el.classList.add('show');
+  if (type) el.classList.add(type);
+  _toastTimer = setTimeout(() => { el.classList.remove('show'); }, 3200);
+};
+function toast(msg, type) { window.toast(msg, type); }
 
 /* ══════ EXPERIENCE HELPERS ══════ */
 /* ══ maskPhone: hide middle digits for non-admin ══ */
@@ -2357,6 +2429,7 @@ function donorRow(d, extraBtns) {
         <span class="drow-tag"><i class="fa-solid fa-location-dot"></i>${d.district||'—'}</span>
         <span class="drow-tag"><i class="fa-solid fa-phone"></i>${d.phone||'—'}</span>
         <span class="cd-pill ${mp}" style="font-size:.66rem;padding:2px 7px"><i class="fa-solid fa-circle fa-xs"></i> ${mt}</span>
+        ${d.userStatus==='accepted'?'<span style="background:var(--green-l);color:var(--green);border:1px solid rgba(26,138,90,.3);border-radius:6px;padding:2px 6px;font-size:.62rem;font-weight:700"><i class="fa-solid fa-circle-check fa-xs"></i> গৃহীত</span>':''}
       </div>
     </div>
     <div class="drow-actions">
@@ -2368,17 +2441,17 @@ function donorRow(d, extraBtns) {
 
 function pendingRow(d) {
   const tag = d.editRequest ? 'সম্পাদনা' : 'নতুন';
-  return `<div class="drow" style="border-color:rgba(181,112,10,.4)">
+  return `<div class="drow" id="prow-${d.id}" style="border-color:rgba(181,112,10,.4);transition:opacity .4s ease,transform .4s ease,max-height .4s ease">
     <div class="drow-blood" style="background:var(--amber)">${d.blood||'?'}</div>
     <div class="drow-info">
       <div class="drow-name">${d.name||'—'}</div>
       <div class="drow-meta">
         <span class="drow-tag"><i class="fa-solid fa-location-dot"></i>${d.district||'—'}</span>
         <span class="drow-tag"><i class="fa-solid fa-phone"></i>${d.phone||'—'}</span>
-        <span class="drow-pend-tag"><i class="fa-solid fa-hourglass-half fa-xs"></i> ${tag}</span>
+        <span id="prow-tag-${d.id}" class="drow-pend-tag"><i class="fa-solid fa-hourglass-half fa-xs"></i> ${tag}</span>
       </div>
     </div>
-    <div class="drow-actions">
+    <div class="drow-actions" id="prow-actions-${d.id}">
       <button class="drow-btn drow-btn-view" onclick="viewDonor('${d.id}',true)"><i class="fa-solid fa-eye"></i> দেখুন</button>
       <button class="drow-btn drow-btn-ok"   onclick="approveDonor('${d.id}')"><i class="fa-solid fa-check"></i></button>
       <button class="drow-btn drow-btn-x"    onclick="rejectDonor('${d.id}')"><i class="fa-solid fa-xmark"></i></button>
@@ -2827,9 +2900,21 @@ window.openAdd = function() {
     ? '<i class="fa-solid fa-droplet"></i> নতুন ডোনার যোগ করুন'
     : '<i class="fa-solid fa-droplet"></i> ডোনার হিসেবে নিবন্ধন করুন';
   document.getElementById('eid').value = '';
-  ['fn','fg-b','fa','fp','fd','fad','fld','fdob','fw'].forEach(x => { const el=document.getElementById(x); if(el) el.value=''; });
+  ['fn','fg-b','fa','fp','fd','fad','fld','fdob','fw','fvil'].forEach(x => { const el=document.getElementById(x); if(el) el.value=''; }); ['fdob-d','fdob-m','fdob-y'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''}); initDobSelects(); initDistrictSelect(); loadThana();
   document.getElementById('fexp').value = '0';
   document.getElementById('age-show').innerHTML = '<i class="fa-solid fa-circle-info fa-xs"></i> বয়স স্বয়ংক্রিয়ভাবে হিসাব হবে';
+  // reset DOB selects
+  ['fdob-d','fdob-m','fdob-y'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+  document.getElementById('fdob').value = '';
+  // reset village
+  const vEl = document.getElementById('fvil'); if(vEl) vEl.value='';
+  initDobSelects();
+  initDistrictSelect();
+  loadThana();
+  // reset last donation selects
+  initLastDonSelects();
+  ['fld-d','fld-m','fld-y'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+  document.getElementById('fld').value = '';
   openM('m-donor');
 };
 window.openEdit = function(id) {
@@ -2843,12 +2928,50 @@ window.openEdit = function(id) {
   document.getElementById('fa').value    = d.age      || '';
   document.getElementById('fp').value    = d.phone    || '';
   document.getElementById('fd').value    = d.district || '';
-  document.getElementById('fad').value   = d.address  || '';
+  document.getElementById('fad').value   = d.thana    || d.address || '';
+  // set village
+  const vilEl = document.getElementById('fvil');
+  if (vilEl) vilEl.value = d.village || '';
   document.getElementById('fld').value   = d.lastDonation || '';
   document.getElementById('fexp').value  = d.donationCount !== undefined ? d.donationCount : 0;
-  document.getElementById('fdob').value  = d.dob || '';
+  // Restore DOB selects
+  if (d.dob) {
+    const parts = d.dob.split('-');
+    const dEl = document.getElementById('fdob-d');
+    const mEl = document.getElementById('fdob-m');
+    const yEl = document.getElementById('fdob-y');
+    if (dEl) dEl.value = parts[2]||'';
+    if (mEl) mEl.value = parts[1]||'';
+    if (yEl) yEl.value = parts[0]||'';
+    document.getElementById('fdob').value = d.dob;
+    calcAge(d.dob);
+  }
+  // Restore district & thana
+  const distEl = document.getElementById('fd');
+  if (distEl && d.district) {
+    distEl.value = d.district;
+    loadThana();
+    setTimeout(() => {
+      const thEl = document.getElementById('fad');
+      if (thEl) thEl.value = d.thana || d.address || '';
+    }, 50);
+  }
   document.getElementById('fw').value    = d.weight || '';
-  if (d.dob) calcAge(d.dob);
+  // Restore last donation date selects
+  initLastDonSelects();
+  if (d.lastDonation) {
+    const parts = d.lastDonation.split('-');
+    const ldD = document.getElementById('fld-d');
+    const ldM = document.getElementById('fld-m');
+    const ldY = document.getElementById('fld-y');
+    if (ldD) ldD.value = parts[2]||'';
+    if (ldM) ldM.value = parts[1]||'';
+    if (ldY) ldY.value = parts[0]||'';
+    document.getElementById('fld').value = d.lastDonation;
+  } else {
+    ['fld-d','fld-m','fld-y'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+    document.getElementById('fld').value = '';
+  }
   openM('m-donor');
 };
 window.saveDonor = async function() {
@@ -2867,7 +2990,9 @@ window.saveDonor = async function() {
   btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> সংরক্ষণ হচ্ছে...';
   const payload = {
     name, blood, age:parseInt(age), phone, district:dist,
+    thana: document.getElementById('fad').value.trim(),
     address: document.getElementById('fad').value.trim(),
+    village: (document.getElementById('fvil')?.value||'').trim(),
     dob: document.getElementById('fdob').value || null,
     weight: parseInt(document.getElementById('fw').value) || null,
     lastDonation: document.getElementById('fld').value || null,
@@ -2880,77 +3005,194 @@ window.saveDonor = async function() {
         // admin edit → direct update, keep confirmed
         await update(ref(db,'donors/'+id), payload);
         toast('ডোনার আপডেট হয়েছে', 'ok');
+        closeM('m-donor');
       } else {
         // user edit → move to pending with original data reference
         payload.originalId = id;
         payload.submittedAt = today();
         payload.editRequest = true;
         await push(pendingRef, payload);
-        toast('সম্পাদনার অনুরোধ পাঠানো হয়েছে — অ্যাডমিন অনুমোদনের পর আপডেট হবে', 'ok');
+        closeM('m-donor');
+        showPendingMessage('সম্পাদনার অনুরোধ পাঠানো হয়েছে — অ্যাডমিন অনুমোদনের পর আপডেট হবে');
       }
     } else {
       if (isAdmin) {
         // admin add → direct to confirmed
         await push(dbRef, payload);
         toast('নতুন ডোনার যোগ হয়েছে', 'ok');
+        closeM('m-donor');
       } else {
         // user add → goes to pending
         payload.submittedAt = today();
+        payload.userStatus = 'pending';
         await push(pendingRef, payload);
-        toast('ডোনার যোগের অনুরোধ পাঠানো হয়েছে — অ্যাডমিন অনুমোদনের পর দেখা যাবে', 'ok');
+        closeM('m-donor');
+        showPendingMessage('আপনার আবেদন সফলভাবে জমা হয়েছে! অ্যাডমিন অনুমোদন করলে আপনার নাম ডোনার তালিকায় দেখা যাবে।');
       }
     }
-    closeM('m-donor');
   } catch(e) { toast(e.message, 'err'); }
-  btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ করুন';
+  finally {
+    btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> সংরক্ষণ করুন';
+  }
 };
 
 
+/* ══════ PENDING SUCCESS MESSAGE ══════ */
+window.showPendingMessage = function(msg) {
+  // Remove any existing pending message
+  const existing = document.getElementById('pending-success-overlay');
+  if (existing) existing.remove();
+
+  const html = `
+  <div id="pending-success-overlay" style="
+    position:fixed;inset:0;z-index:9800;
+    background:rgba(0,0,0,.5);backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;
+    padding:1.5rem;animation:fadeIn .3s ease">
+    <div style="
+      background:var(--card);border-radius:20px;
+      padding:2rem 1.8rem;max-width:380px;width:100%;
+      box-shadow:0 16px 48px rgba(0,0,0,.25);
+      border-top:4px solid var(--amber);
+      animation:slideUp .35s cubic-bezier(.34,1.56,.64,1);
+      text-align:center">
+      <div style="
+        width:64px;height:64px;border-radius:50%;
+        background:var(--amber-l);
+        display:flex;align-items:center;justify-content:center;
+        margin:0 auto 1.2rem;
+        border:2px solid rgba(181,112,10,.3)">
+        <i class="fa-solid fa-hourglass-half" style="font-size:1.6rem;color:var(--amber)"></i>
+      </div>
+      <div style="font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;color:var(--txt);margin-bottom:.6rem">
+        আবেদন গ্রহণ করা হয়েছে!
+      </div>
+      <p style="font-size:.88rem;color:var(--txt-m);line-height:1.7;margin-bottom:1.4rem">${msg}</p>
+      <div style="
+        background:var(--amber-l);border:1px solid rgba(181,112,10,.25);
+        border-radius:10px;padding:.7rem 1rem;margin-bottom:1.4rem;
+        font-size:.8rem;color:var(--amber);font-weight:600;
+        display:flex;align-items:center;gap:.5rem;text-align:left">
+        <i class="fa-solid fa-circle-info" style="flex-shrink:0"></i>
+        অ্যাডমিন অনুমোদন প্রদান করলে আপনার তথ্য সক্রিয় হবে।
+      </div>
+      <button onclick="document.getElementById('pending-success-overlay').remove()" style="
+        width:100%;padding:.8rem;border-radius:12px;border:none;
+        background:var(--amber);color:#fff;cursor:pointer;
+        font-family:'Noto Serif Bengali',serif;font-size:.95rem;font-weight:700;
+        box-shadow:0 4px 14px rgba(181,112,10,.3);transition:all .18s"
+        onmouseover="this.style.background='#9A5A00'" onmouseout="this.style.background='var(--amber)'">
+        <i class="fa-solid fa-check"></i> ঠিক আছে
+      </button>
+    </div>
+  </div>`;
+
+  document.body.insertAdjacentHTML('beforeend', html);
+};
+
 /* ══════ APPROVE / REJECT PENDING ══════ */
+
+/* ══ Guard: track IDs currently being processed to prevent double-approval ══ */
+const _processingPids = new Set();
+
+/* helper: update pending badges & local array */
+function removePendingLocally(pid) {
+  pending = pending.filter(x => x.id !== pid);
+  // Force _pendingHash to new value so onValue re-render won't add it back
+  _pendingHash = 'skip|' + pid + '|' + Date.now();
+  const count = pending.length;
+  const pb = document.getElementById('pend-badge');
+  if (pb) { pb.textContent = count || ''; pb.style.display = count ? 'inline' : 'none'; }
+  const snb = document.getElementById('snav-pend-cnt');
+  if (snb) { snb.textContent = count; snb.style.display = count ? 'flex' : 'none'; }
+  const asp = document.getElementById('as-p'); if (asp) asp.textContent = count;
+  const kp  = document.getElementById('kpi-pend'); if (kp) kp.textContent = count;
+}
+
+/* helper: immediately remove approved row with quick fade */
+function markRowApproved(pid) {
+  const row = document.getElementById('prow-' + pid);
+  if (!row) return;
+  // Instantly fade & slide out
+  row.style.transition = 'opacity .3s ease, transform .3s ease';
+  row.style.opacity    = '0';
+  row.style.transform  = 'translateX(40px)';
+  setTimeout(() => { row.remove(); }, 320);
+}
+
 window.approveDonor = async function(pid) {
-  const p = pending.find(x => x.id === pid); if (!p) return;
-  // disable all approve/reject buttons for this pending item
-  document.querySelectorAll(`[onclick*="approveDonor('${pid}')"], [onclick*="rejectDonor('${pid}')"]`).forEach(b => {
-    b.dataset.loading = 'true';
-    if (b.classList.contains('drow-btn-ok')) b.innerHTML = '<i class="fa-solid fa-spinner"></i>';
-  });
+  // ── Guard: prevent double-processing ──
+  if (_processingPids.has(pid)) { toast('ইতিমধ্যে প্রক্রিয়াধীন আছে', 'warn'); return; }
+  const p = pending.find(x => x.id === pid);
+  if (!p) { toast('আবেদনটি আর পেন্ডিং তালিকায় নেই', 'warn'); return; }
+  _processingPids.add(pid);
+
+  // Step 1: Immediately remove row from DOM & local state BEFORE any await
+  // This ensures no re-render can bring it back
+  removePendingLocally(pid);
+  markRowApproved(pid);
+
+  // Close view modal if open
+  const vm = document.getElementById('m-view');
+  if (vm && vm.classList.contains('open')) closeM('m-view');
+
   try {
     if (p.editRequest && p.originalId) {
-      const { id, originalId, submittedAt, editRequest, ...data } = p;
+      const { id, originalId, submittedAt, editRequest, userStatus, ...data } = p;
       await update(ref(db, 'donors/' + originalId), data);
       toast(p.name + '-এর তথ্য আপডেট অনুমোদিত হয়েছে ✓', 'ok');
     } else {
-      const { id, submittedAt, ...data } = p;
+      const { id, submittedAt, userStatus, ...data } = p;
       data.approvedAt = today();
+      data.userStatus = 'accepted';
       await push(dbRef, data);
       toast(p.name + '-কে অনুমোদন দেওয়া হয়েছে ✓', 'ok');
     }
     await remove(ref(db, 'pendingDonors/' + pid));
   } catch(e) {
     toast(e.message, 'err');
-    document.querySelectorAll(`[onclick*="${pid}"]`).forEach(b => {
-      b.dataset.loading = 'false';
-      if (b.classList.contains('drow-btn-ok')) b.innerHTML = '<i class="fa-solid fa-check"></i>';
-    });
+    _processingPids.delete(pid);
+    // Restore: re-add to pending and re-render
+    pending.push(p);
+    _pendingHash = '';
+    if (adminSection === 'pending') renderSection('pending');
   }
 };
 
 window.rejectDonor = async function(pid) {
-  const p = pending.find(x => x.id === pid); if (!p) return;
+  // ── Guard: prevent double-processing ──
+  if (_processingPids.has(pid)) { toast('ইতিমধ্যে প্রক্রিয়াধীন আছে', 'warn'); return; }
+  const p = pending.find(x => x.id === pid);
+  if (!p) { toast('আবেদনটি আর পেন্ডিং তালিকায় নেই', 'warn'); return; }
   const label = p.editRequest ? 'সম্পাদনার অনুরোধটি' : '"' + p.name + '"-এর আবেদনটি';
   if (!confirm(label + ' বাতিল করবেন?')) return;
-  document.querySelectorAll(`[onclick*="rejectDonor('${pid}')"]`).forEach(b => {
-    b.dataset.loading = 'true';
-    b.innerHTML = '<i class="fa-solid fa-spinner"></i>';
-  });
+  _processingPids.add(pid);
+
+  // Step 1: Remove row from DOM & local state BEFORE any await
+  removePendingLocally(pid);
+  const row = document.getElementById('prow-' + pid);
+  if (row) {
+    row.style.transition = 'opacity .3s ease, transform .3s ease';
+    row.style.opacity    = '0';
+    row.style.transform  = 'translateX(-40px)';
+    setTimeout(() => { row.remove(); }, 320);
+  }
+  // Close view modal if open
+  const vm2 = document.getElementById('m-view');
+  if (vm2 && vm2.classList.contains('open')) closeM('m-view');
+
   try {
+    const { id: _id, ...pdata } = p;
+    await push(ref(db, 'cancelledDonors'), { ...pdata, cancelledAt: today(), userStatus: 'cancelled' });
     await remove(ref(db, 'pendingDonors/' + pid));
     toast('অনুরোধ বাতিল করা হয়েছে', 'ok');
   } catch(e) {
     toast(e.message, 'err');
-    document.querySelectorAll(`[onclick*="rejectDonor('${pid}')"]`).forEach(b => {
-      b.dataset.loading = 'false'; b.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-    });
+    _processingPids.delete(pid);
+    // Restore: re-add to pending and re-render
+    pending.push(p);
+    _pendingHash = '';
+    if (adminSection === 'pending') renderSection('pending');
   }
 };
 
@@ -3608,7 +3850,7 @@ document.documentElement.setAttribute('data-theme', savedTheme);
 if (savedTheme === 'dark') document.getElementById('theme-icon').className = 'fa-solid fa-moon';
 
 /* ══════ BKASH ══════ */
-const BKASH_NUMBER = '019********'; // ← এখানে আপনার বিকাশ নম্বর দিন
+const BKASH_NUMBER = '01712-345678'; // ← এখানে আপনার বিকাশ নম্বর দিন
 document.addEventListener('DOMContentLoaded', () => {
   const el = document.getElementById('bkash-display-num');
   if (el) el.textContent = BKASH_NUMBER;
@@ -3642,6 +3884,167 @@ window.calcAge = function(dob) {
   else               el.innerHTML = '<i class="fa-solid fa-circle-check fa-xs" style="color:var(--green)"></i> বয়স: <strong>' + age + ' বছর</strong> — রক্তদানে যোগ্য';
 };
 // setInterval removed — Firebase onValue handles real-time updates automatically
+
+
+/* ══════ BANGLADESH DISTRICTS & THANAS ══════ */
+const BD_DISTRICTS = {
+  "ঢাকা":["আদাবর","বাড্ডা","বিমানবন্দর","ডেমরা","ধানমন্ডি","দোহার","গেন্ডারিয়া","গুলশান","হাজারীবাগ","কেরানীগঞ্জ","খিলগাঁও","খিলক্ষেত","কোতোয়ালি","লালবাগ","মিরপুর","মোহাম্মদপুর","মতিঝিল","নবাবগঞ্জ","নিউমার্কেট","পল্টন","রমনা","সবুজবাগ","শাহজাহানপুর","শ্যামপুর","সূত্রাপুর","তেজগাঁও","উত্তর খান","দক্ষিণ খান","বসুন্ধরা","সাভার","ধামরাই"],
+  "চট্টগ্রাম":["আকবর শাহ","বাকলিয়া","বায়েজিদ","বন্দর","চান্দগাঁও","ডবলমুরিং","হালিশহর","হাটহাজারী","কোতোয়ালি","পাঁচলাইশ","পতেঙ্গা","রাউজান","সন্দ্বীপ","সীতাকুণ্ড","সদর","ফটিকছড়ি","মীরসরাই","বোয়ালখালী","কর্ণফুলী","আনোয়ারা","চন্দনাইশ","লোহাগাড়া","বাঁশখালী","পটিয়া","রাঙ্গুনিয়া"],
+  "রাজশাহী":["বাঘা","বাগমারা","চারঘাট","দুর্গাপুর","গোদাগাড়ী","মোহনপুর","পবা","পুঠিয়া","তানোর","বোয়ালিয়া"],
+  "খুলনা":["বটিয়াঘাটা","দাকোপ","ডুমুরিয়া","ফুলতলা","খানজাহান আলী","কয়রা","পাইকগাছা","রূপসা","সোনাডাঙ্গা","তেরখাদা","খালিশপুর"],
+  "সিলেট":["বালাগঞ্জ","বিয়ানীবাজার","বিশ্বনাথ","কোম্পানীগঞ্জ","ফেঞ্চুগঞ্জ","গোলাপগঞ্জ","গোয়াইনঘাট","জকিগঞ্জ","কানাইঘাট","সদর","ওসমানীনগর","দক্ষিণ সুরমা","জৈন্তাপুর"],
+  "বরিশাল":["আগৈলঝারা","বাকেরগঞ্জ","বানারীপাড়া","গৌরনদী","হিজলা","মেহেন্দিগঞ্জ","মুলাদী","উজিরপুর","সদর","বাবুগঞ্জ"],
+  "রংপুর":["বদরগঞ্জ","গঙ্গাচড়া","কাউনিয়া","মিঠাপুকুর","পীরগঞ্জ","পীরগাছা","তারাগঞ্জ","সদর"],
+  "ময়মনসিংহ":["ভালুকা","ধোবাউড়া","ফুলবাড়ীয়া","গফরগাঁও","গৌরীপুর","হালুয়াঘাট","ঈশ্বরগঞ্জ","মুক্তাগাছা","নান্দাইল","সদর","ত্রিশাল","তারাকান্দা"],
+  "কুমিল্লা":["বরুড়া","ব্রাহ্মণপাড়া","বুড়িচং","চান্দিনা","চৌদ্দগ্রাম","দাউদকান্দি","দেবীদ্বার","হোমনা","লাকসাম","লালমাই","মেঘনা","মনোহরগঞ্জ","মুরাদনগর","নাঙ্গলকোট","সদর","সদর দক্ষিণ","তিতাস"],
+  "গাজীপুর":["কালিয়াকৈর","কালীগঞ্জ","কাপাসিয়া","সদর","শ্রীপুর","টঙ্গী"],
+  "নারায়ণগঞ্জ":["আড়াইহাজার","বন্দর","রূপগঞ্জ","সদর","সিদ্ধিরগঞ্জ","সোনারগাঁও"],
+  "টাঙ্গাইল":["বাসাইল","ভূঞাপুর","দেলদুয়ার","ধনবাড়ী","ঘাটাইল","গোপালপুর","কালিহাতী","মধুপুর","মির্জাপুর","নাগরপুর","সখীপুর","সদর"],
+  "ফরিদপুর":["আলফাডাঙ্গা","ভাঙ্গা","বোয়ালমারী","চরভদ্রাসন","মধুখালী","নগরকান্দা","সদর","সালথা"],
+  "যশোর":["অভয়নগর","বাঘারপাড়া","চৌগাছা","ঝিকরগাছা","কেশবপুর","মণিরামপুর","সদর","শার্শা"],
+  "বগুড়া":["আদমদীঘি","বগুড়া সদর","ধুনট","দুপচাঁচিয়া","গাবতলী","কাহালু","নন্দীগ্রাম","সারিয়াকান্দি","শাহজাহানপুর","শেরপুর","সোনাতলা"],
+  "দিনাজপুর":["বিরামপুর","বিরল","বোচাগঞ্জ","চিরিরবন্দর","ঘোড়াঘাট","হাকিমপুর","কাহারোল","খানসামা","নবাবগঞ্জ","পার্বতীপুর","সদর"],
+  "কুষ্টিয়া":["ভেড়ামারা","দৌলতপুর","খোকসা","কুমারখালী","মিরপুর","সদর"],
+  "পাবনা":["আটঘরিয়া","বেড়া","ভাঙ্গুড়া","চাটমোহর","ঈশ্বরদী","ফরিদপুর","সদর","সাঁথিয়া","সুজানগর"],
+  "নোয়াখালী":["বেগমগঞ্জ","চাটখিল","কোম্পানীগঞ্জ","হাতিয়া","সদর","সেনবাগ","সোনাইমুড়ী","সুবর্ণচর"],
+  "ব্রাহ্মণবাড়িয়া":["আখাউড়া","বাঞ্ছারামপুর","বিজয়নগর","কসবা","নাসিরনগর","নবীনগর","সরাইল","সদর"],
+  "হবিগঞ্জ":["আজমিরীগঞ্জ","বানিয়াচং","চুনারুঘাট","হবিগঞ্জ সদর","লাখাই","মাধবপুর","নবীগঞ্জ","শায়েস্তাগঞ্জ"],
+  "মৌলভীবাজার":["বড়লেখা","জুড়ী","কমলগঞ্জ","কুলাউড়া","রাজনগর","সদর","শ্রীমঙ্গল"],
+  "সুনামগঞ্জ":["বিশ্বম্ভরপুর","ছাতক","দিরাই","দোয়ারাবাজার","জগন্নাথপুর","জামালগঞ্জ","সদর","শাল্লা","তাহিরপুর","ধর্মপাশা"],
+  "নেত্রকোণা":["আটপাড়া","বারহাট্টা","দুর্গাপুর","কলমাকান্দা","কেন্দুয়া","মদন","মোহনগঞ্জ","পূর্বধলা","সদর"],
+  "কিশোরগঞ্জ":["অষ্টগ্রাম","বাজিতপুর","ভৈরব","হোসেনপুর","ইটনা","করিমগঞ্জ","কটিয়াদি","কুলিয়ারচর","মিঠামইন","নিকলী","পাকুন্দিয়া","সদর","তাড়াইল"],
+  "শেরপুর":["ঝিনাইগাতী","নকলা","নালিতাবাড়ী","সদর","শ্রীবরদী"],
+  "জামালপুর":["বকশীগঞ্জ","দেওয়ানগঞ্জ","ইসলামপুর","জামালপুর সদর","মাদারগঞ্জ","মেলান্দহ","সরিষাবাড়ী"],
+  "মানিকগঞ্জ":["দৌলতপুর","ঘিওর","হরিরামপুর","সদর","শিবালয়","শিংগাইর"],
+  "মুন্সিগঞ্জ":["গজারিয়া","লৌহজং","মিরকাদিম","সদর","শ্রীনগর","টঙ্গীবাড়ী"],
+  "রাজবাড়ী":["বালিয়াকান্দি","গোয়ালন্দ","কালুখালী","পাংশা","সদর"],
+  "মাদারীপুর":["কালকিনি","রাজৈর","সদর","শিবচর"],
+  "শরীয়তপুর":["ভেদরগঞ্জ","ডামুড্যা","গোসাইরহাট","জাজিরা","নড়িয়া","সদর"],
+  "গোপালগঞ্জ":["কাশিয়ানী","কোটালীপাড়া","মুকসুদপুর","সদর","টুঙ্গিপাড়া"],
+  "বাগেরহাট":["চিতলমারী","ফকিরহাট","কচুয়া","মোল্লাহাট","মোংলা","মোরেলগঞ্জ","রামপাল","সদর","শরণখোলা"],
+  "নড়াইল":["কালিয়া","লোহাগড়া","সদর"],
+  "মাগুরা":["মহম্মদপুর","মাগুরা সদর","শালিখা","শ্রীপুর"],
+  "ঝিনাইদহ":["হরিণাকুন্ডু","জীবননগর","কালীগঞ্জ","কোটচাঁদপুর","মহেশপুর","সদর"],
+  "মেহেরপুর":["গাংনী","মুজিবনগর","সদর"],
+  "চুয়াডাঙ্গা":["আলমডাঙ্গা","দামুড়হুদা","জীবননগর","সদর"],
+  "সাতক্ষীরা":["আশাশুনি","দেবহাটা","কালিগঞ্জ","কলারোয়া","সদর","শ্যামনগর","তালা"],
+  "পিরোজপুর":["ভান্ডারিয়া","ইন্দুরকানী","কাউখালী","মঠবাড়িয়া","নাজিরপুর","নেছারাবাদ","সদর","জিয়ানগর"],
+  "ঝালকাঠি":["কাঠালিয়া","নলছিটি","রাজাপুর","সদর"],
+  "পটুয়াখালী":["বাউফল","দশমিনা","গলাচিপা","কলাপাড়া","মির্জাগঞ্জ","পাথরঘাটা","রাঙ্গাবালী","সদর"],
+  "ভোলা":["বোরহানউদ্দিন","চরফ্যাশন","দৌলতখান","লালমোহন","মনপুরা","সদর","তজুমদ্দিন"],
+  "লক্ষ্মীপুর":["কমলনগর","লক্ষ্মীপুর সদর","রায়পুর","রামগঞ্জ","রামগতি"],
+  "চাঁদপুর":["ফরিদগঞ্জ","হাইমচর","হাজীগঞ্জ","কচুয়া","মতলব উত্তর","মতলব দক্ষিণ","সদর","শাহরাস্তি"],
+  "ফেনী":["ছাগলনাইয়া","দাগনভূঁইয়া","ফুলগাজী","পরশুরাম","সদর","সোনাগাজী"],
+  "কক্সবাজার":["চকরিয়া","কুতুবদিয়া","মহেশখালী","পেকুয়া","রামু","সদর","টেকনাফ","উখিয়া"],
+  "রাঙামাটি":["বাঘাইছড়ি","বরকল","বিলাইছড়ি","কাপ্তাই","জুরাছড়ি","কাউখালী","লংগদু","নানিয়ারচর","রাজস্থলী","সদর"],
+  "খাগড়াছড়ি":["দিঘিনালা","গুইমারা","খাগড়াছড়ি সদর","লক্ষ্মীছড়ি","মাটিরাঙ্গা","মানিকছড়ি","মহালছড়ি","পানছড়ি","রামগড়"],
+  "বান্দরবান":["আলীকদম","বান্দরবান সদর","লামা","নাইক্ষ্যংছড়ি","রুমা","রোয়াংছড়ি","থানচি"],
+  "কুড়িগ্রাম":["ভুরুঙ্গামারী","চর রাজিবপুর","চিলমারী","ফুলবাড়ী","নাগেশ্বরী","রাজারহাট","রৌমারী","সদর","উলিপুর"],
+  "গাইবান্ধা":["ফুলছড়ি","গোবিন্দগঞ্জ","পলাশবাড়ী","সাদুল্লাপুর","সদর","সাঘাটা","সুন্দরগঞ্জ"],
+  "লালমনিরহাট":["আদিতমারী","হাতীবান্ধা","কালীগঞ্জ","পাটগ্রাম","সদর"],
+  "নীলফামারী":["ডিমলা","ডোমার","জলঢাকা","কিশোরগঞ্জ","সদর","সৈয়দপুর"],
+  "পঞ্চগড়":["আটোয়ারী","বোদা","দেবীগঞ্জ","পঞ্চগড় সদর","তেতুলিয়া"],
+  "ঠাকুরগাঁও":["বালিয়াডাঙ্গী","হরিপুর","পীরগঞ্জ","রাণীশংকৈল","সদর"],
+  "জয়পুরহাট":["আক্কেলপুর","কালাই","ক্ষেতলাল","পাঁচবিবি","সদর"],
+  "চাঁপাইনবাবগঞ্জ":["ভোলাহাট","গোমস্তাপুর","নাচোল","সদর","শিবগঞ্জ"],
+  "নওগাঁ":["আত্রাই","বদলগাছী","ধামইরহাট","মহাদেবপুর","মান্দা","নিয়ামতপুর","পত্নীতলা","পোরশা","রাণীনগর","সদর","সাপাহার"],
+  "নাটোর":["বাগাতিপাড়া","বড়াইগ্রাম","গুরুদাসপুর","লালপুর","নলডাঙ্গা","সদর","সিংড়া"],
+  "সিরাজগঞ্জ":["বেলকুচি","চৌহালি","কামারখন্দ","কাজিপুর","রায়গঞ্জ","সদর","শাহজাদপুর","তাড়াশ","উল্লাপাড়া"],
+  "ঝিনাইদহ":["হরিণাকুন্ডু","জীবননগর","কালীগঞ্জ","কোটচাঁদপুর","মহেশপুর","সদর"]
+};
+
+window.initDistrictSelect = function() {
+  const dEl = document.getElementById('fd');
+  if (!dEl) return;
+  dEl.innerHTML = '<option value="">-- জেলা নির্বাচন করুন --</option>';
+  // শুধুমাত্র ঢাকা ও মুন্সিগঞ্জ দেখানো হবে
+  const allowedDistricts = ['ঢাকা', 'মুন্সিগঞ্জ'];
+  allowedDistricts.forEach(d => {
+    if (BD_DISTRICTS[d]) {
+      dEl.innerHTML += `<option value="${d}">${d}</option>`;
+    }
+  });
+};
+
+window.loadThana = function() {
+  const dist = document.getElementById('fd')?.value || '';
+  const tEl  = document.getElementById('fad');
+  if (!tEl) return;
+  const thanas = BD_DISTRICTS[dist] || [];
+  if (!thanas.length) {
+    tEl.innerHTML = '<option value="">-- আগে জেলা বাছুন --</option>';
+    return;
+  }
+  tEl.innerHTML = '<option value="">-- থানা নির্বাচন করুন --</option>';
+  thanas.forEach(t => { tEl.innerHTML += `<option value="${t}">${t}</option>`; });
+};
+
+/* ══════ DOB ASSEMBLER ══════ */
+window.assembleDob = function() {
+  const d = document.getElementById('fdob-d')?.value;
+  const m = document.getElementById('fdob-m')?.value;
+  const y = document.getElementById('fdob-y')?.value;
+  if (d && m && y) {
+    const iso = y + '-' + m + '-' + d.padStart(2,'0');
+    document.getElementById('fdob').value = iso;
+    calcAge(iso);
+  }
+};
+
+window.initDobSelects = function() {
+  const dEl = document.getElementById('fdob-d');
+  const yEl = document.getElementById('fdob-y');
+  if (!dEl || !yEl) return;
+  dEl.innerHTML = '<option value="">দিন</option>';
+  for (let i=1;i<=31;i++) {
+    const v = String(i).padStart(2,'0');
+    dEl.innerHTML += `<option value="${v}">${i}</option>`;
+  }
+  const curY = new Date().getFullYear();
+  yEl.innerHTML = '<option value="">বছর</option>';
+  for (let y=curY-10;y>=curY-80;y--) {
+    yEl.innerHTML += `<option value="${y}">${y}</option>`;
+  }
+};
+
+/* ══ Last Donation Date Assembler ══ */
+window.assembleLastDon = function() {
+  const d = document.getElementById('fld-d')?.value;
+  const m = document.getElementById('fld-m')?.value;
+  const y = document.getElementById('fld-y')?.value;
+  if (d && m && y) {
+    const iso = y + '-' + m + '-' + d.padStart(2,'0');
+    document.getElementById('fld').value = iso;
+  } else {
+    document.getElementById('fld').value = '';
+  }
+};
+
+window.initLastDonSelects = function() {
+  const dEl = document.getElementById('fld-d');
+  const yEl = document.getElementById('fld-y');
+  if (!dEl || !yEl) return;
+  dEl.innerHTML = '<option value="">দিন</option>';
+  for (let i=1;i<=31;i++) {
+    const v = String(i).padStart(2,'0');
+    dEl.innerHTML += `<option value="${v}">${i}</option>`;
+  }
+  const curY = new Date().getFullYear();
+  yEl.innerHTML = '<option value="">বছর</option>';
+  for (let y=curY;y>=curY-10;y--) {
+    yEl.innerHTML += `<option value="${y}">${y}</option>`;
+  }
+};
+
+/* ══════ CANCELLED DONORS LISTENER ══════ */
+const cancelledRef = ref(db, 'cancelledDonors');
+let cancelledDonors = [];
+onValue(cancelledRef, snap => {
+  const raw = [];
+  const d = snap.val();
+  if (d) Object.entries(d).forEach(([id,v]) => raw.push({id,...v}));
+  cancelledDonors = raw;
+}, err => console.warn('cancelledDonors:', err.message));
 
 /* ══ Safe init — runs after ALL functions are defined ══ */
 const debouncedRefresh = debounce(refreshAll, 80);
