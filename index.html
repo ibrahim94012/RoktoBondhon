@@ -205,33 +205,167 @@ main{max-width:1100px;margin:0 auto;padding:1.5rem 1rem 6rem;overflow-x:hidden}
 .chip.on{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 2px 10px var(--red-g)}
 
 /* ════════ DONOR GRID ════════ */
-#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+#grid{display:flex;flex-direction:column;gap:.65rem}
+
+/* ── Row Donor Card ── */
 .dcard{
-  background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);
-  padding:1.2rem;box-shadow:var(--shadow);
-  transition:transform .25s,box-shadow .25s,border-color .25s;
-  animation:fadeUp .35s ease both;
+  background:var(--card);border:1px solid var(--bdr);border-radius:14px;
+  padding:.85rem 1rem;box-shadow:var(--shadow);
+  transition:transform .2s,box-shadow .2s,border-color .2s;
+  animation:fadeUp .3s ease both;
   position:relative;overflow:hidden;
+  cursor:pointer;
+  display:flex;align-items:center;gap:.9rem;
+  user-select:none;
 }
 .dcard::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:var(--red);opacity:0;transition:opacity .25s;
+  content:'';position:absolute;top:0;left:0;bottom:0;width:3px;
+  background:var(--red);opacity:0;transition:opacity .2s;border-radius:14px 0 0 14px;
 }
-.dcard:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--bdr-r)}
+.dcard:hover{transform:translateX(3px);box-shadow:var(--shadow-lg);border-color:var(--bdr-r)}
 .dcard:hover::before{opacity:1}
+.dcard:active{transform:scale(.99)}
 
-.card-head{display:flex;align-items:center;gap:.9rem;margin-bottom:1rem;padding-bottom:.9rem;border-bottom:1px solid var(--bdr)}
+/* blood group badge */
 .blood-badge{
-  width:48px;height:48px;border-radius:12px;flex-shrink:0;
+  width:52px;height:52px;border-radius:13px;flex-shrink:0;
   background:var(--red);color:#fff;
   display:flex;align-items:center;justify-content:center;
-  font-family:'Fira Code',monospace;font-size:.95rem;font-weight:700;
-  box-shadow:0 4px 12px var(--red-g);
+  font-family:'Fira Code',monospace;font-size:1rem;font-weight:700;
+  box-shadow:0 3px 12px var(--red-g);
+  transition:transform .2s,box-shadow .2s;
 }
+.dcard:hover .blood-badge{transform:scale(1.06)}
+
+/* middle info */
+.dcard-mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:.18rem}
+.dcard-name{
+  font-family:'Playfair Display',serif;font-size:.98rem;font-weight:700;
+  color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.dcard-loc{font-size:.75rem;color:var(--txt-m);display:flex;align-items:center;gap:3px}
+.dcard-meta{font-size:.72rem;color:var(--txt-d);display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:.05rem}
+
+/* right status pill */
+.dcard-right{display:flex;flex-direction:column;align-items:flex-end;gap:.35rem;flex-shrink:0}
+.dcard-status{font-size:.66rem;font-weight:700;padding:3px 10px;border-radius:12px;white-space:nowrap}
+.dcard-arrow{font-size:.75rem;color:var(--txt-d);transition:color .18s}
+.dcard:hover .dcard-arrow{color:var(--red)}
+
+/* available pulse */
+.dcard-avail .blood-badge{animation:heartbeat 2s ease-in-out infinite}
+
+/* ── Pagination ── */
+#pagination{
+  display:flex;align-items:center;justify-content:center;
+  gap:.45rem;margin-top:1.2rem;flex-wrap:wrap;
+}
+.pg-btn{
+  min-width:36px;height:36px;padding:0 10px;
+  border-radius:9px;border:1.5px solid var(--bdr);
+  background:var(--card);color:var(--txt-m);
+  font-family:'Fira Code',monospace;font-size:.82rem;font-weight:600;
+  cursor:pointer;transition:all .18s;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+}
+.pg-btn:hover{border-color:var(--red);color:var(--red);background:var(--red-l)}
+.pg-btn.active{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 2px 10px var(--red-g)}
+.pg-btn:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+.pg-info{font-size:.75rem;color:var(--txt-d);padding:0 .3rem;white-space:nowrap}
+
+/* ── Donor Detail Popup (bottom sheet) ── */
+#donor-popup-overlay{
+  position:fixed;inset:0;z-index:300;
+  background:rgba(0,0,0,0);
+  transition:background .3s ease;
+  pointer-events:none;
+}
+#donor-popup-overlay.open{
+  background:rgba(0,0,0,.45);
+  pointer-events:all;
+}
+#donor-popup{
+  position:fixed;bottom:0;left:0;right:0;z-index:301;
+  background:var(--card);
+  border-radius:22px 22px 0 0;
+  box-shadow:0 -8px 40px rgba(0,0,0,.18);
+  max-height:88vh;
+  display:flex;flex-direction:column;
+  transform:translateY(100%);
+  transition:transform .38s cubic-bezier(.4,0,.2,1);
+  will-change:transform;
+}
+@media(min-width:600px){
+  #donor-popup{max-width:480px;left:50%;transform:translateX(-50%) translateY(110%);border-radius:22px;bottom:1.5rem;box-shadow:var(--shadow-lg)}
+  #donor-popup.open{transform:translateX(-50%) translateY(0)!important}
+}
+#donor-popup.open{transform:translateY(0)}
+
+.dpop-handle-wrap{display:flex;justify-content:center;padding:.7rem 0 .3rem;cursor:grab;flex-shrink:0}
+.dpop-handle-wrap:active{cursor:grabbing}
+.dpop-handle{width:44px;height:5px;background:var(--bdr);border-radius:3px;transition:background .2s,width .2s}
+.dpop-handle-wrap:hover .dpop-handle{background:var(--red);width:54px}
+@media(min-width:600px){.dpop-handle-wrap{display:none}}
+
+.dpop-scroll{overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:0 1.3rem 1rem}
+
+/* popup hero */
+.dpop-hero{
+  display:flex;align-items:center;gap:1rem;
+  padding:.8rem 1.3rem .9rem;
+  border-bottom:1px solid var(--bdr);
+  flex-shrink:0;
+}
+.dpop-blood{
+  width:62px;height:62px;border-radius:16px;flex-shrink:0;
+  background:var(--red);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Fira Code',monospace;font-size:1.25rem;font-weight:700;
+  box-shadow:0 5px 18px var(--red-g);
+}
+.dpop-name{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--txt)}
+.dpop-loc{font-size:.78rem;color:var(--txt-m);margin-top:3px;display:flex;align-items:center;gap:4px}
+.dpop-close{
+  margin-left:auto;width:34px;height:34px;border-radius:50%;
+  border:1.5px solid var(--bdr);background:var(--surf);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--txt-m);font-size:.85rem;flex-shrink:0;
+  transition:all .18s;
+}
+.dpop-close:hover{border-color:var(--red);color:var(--red);background:var(--red-l)}
+
+/* detail grid */
+.dpop-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:.6rem;
+  margin:.95rem 0;
+}
+.dpop-field{
+  background:var(--surf);border:1px solid var(--bdr);border-radius:10px;
+  padding:.65rem .75rem;
+}
+.dpop-field-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;color:var(--txt-d);font-weight:700;margin-bottom:.2rem}
+.dpop-field-val{font-size:.9rem;color:var(--txt);font-weight:600}
+
+/* cooldown inside popup */
+.dpop-cd{
+  background:var(--surf);border:1px solid var(--bdr);border-radius:10px;
+  padding:.8rem .9rem;margin-bottom:.9rem;
+}
+
+/* popup footer */
+.dpop-footer{
+  display:flex;gap:.6rem;padding:.9rem 1.3rem calc(.9rem + env(safe-area-inset-bottom,0));
+  border-top:1px solid var(--bdr);background:var(--card);flex-shrink:0;
+  position:sticky;bottom:0;
+  border-radius:0 0 22px 22px;
+}
+.dpop-scroll{padding-top:.75rem}
+
+/* old card parts kept for admin grid */
+.card-head{display:flex;align-items:center;gap:.9rem;margin-bottom:1rem;padding-bottom:.9rem;border-bottom:1px solid var(--bdr)}
 .card-info-top{flex:1;min-width:0}
 .card-name{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card-loc{font-size:.78rem;color:var(--txt-m);display:flex;align-items:center;gap:4px;margin-top:2px}
-
 .card-rows{display:flex;flex-direction:column;gap:.45rem;margin-bottom:1rem}
 .card-row{display:flex;align-items:center;gap:.6rem;font-size:.82rem;color:var(--txt-m)}
 .card-row i{width:16px;text-align:center;color:var(--red);opacity:.7;font-size:.8rem}
@@ -400,6 +534,9 @@ main{max-width:1100px;margin:0 auto;padding:1.5rem 1rem 6rem;overflow-x:hidden}
 .aact-edit:hover{background:rgba(21,101,192,.08);border-color:var(--blue)}
 .aact-del{border-color:rgba(255,50,50,.2);color:#E53935}
 .aact-del:hover{background:rgba(255,50,50,.08);border-color:#E53935}
+.ract-cancel-don{border-color:rgba(255,140,0,.35);color:#E65C00}
+.ract-cancel-don:hover{background:rgba(255,140,0,.1);border-color:#E65C00;color:#E65C00}
+.rs-cancelled-don{background:rgba(255,140,0,.12);color:#E65C00;border:1px solid rgba(255,140,0,.3)}
 
 /* ════════ MODALS — MOBILE-APP STYLE ════════ */
 .overlay{
@@ -718,6 +855,7 @@ main{max-width:1100px;margin:0 auto;padding:1.5rem 1rem 6rem;overflow-x:hidden}
 }
 .req-row-avatar.acc{background:linear-gradient(135deg,var(--red),var(--red-d));animation:heartbeat 1.5s ease-in-out infinite}
 .req-row-avatar.done{background:linear-gradient(135deg,var(--green),#0D6040)}
+.req-row-avatar.cancelled{background:linear-gradient(135deg,#E65C00,#B34600)}
 .req-row-info{flex:1;min-width:0;overflow:hidden}
 .req-row-name{font-weight:700;font-size:.85rem;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .req-row-meta{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin-top:2px}
@@ -1182,79 +1320,6 @@ canvas{width:100%!important;max-height:220px}
 .dash-table .td-name{font-weight:700;color:var(--txt)}
 
 
-/* ════════ BKASH DONATION MODAL ════════ */
-.bkash-modal-box{
-  background:var(--card);border-radius:20px;
-  width:min(400px,95vw);padding:0;overflow:hidden;
-  box-shadow:var(--shadow-lg);
-  animation:popIn .3s cubic-bezier(.34,1.56,.64,1);
-}
-.bkash-hero{
-  background:linear-gradient(135deg,#E2136E 0%,#9B0049 100%);
-  padding:2rem 1.5rem 1.5rem;text-align:center;position:relative;overflow:hidden;
-}
-.bkash-hero::before{
-  content:'';position:absolute;top:-40px;right:-40px;
-  width:160px;height:160px;border-radius:50%;
-  background:rgba(255,255,255,.07);
-}
-.bkash-logo-wrap{
-  width:72px;height:72px;border-radius:18px;
-  background:#fff;margin:0 auto .8rem;
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 8px 24px rgba(0,0,0,.2);
-}
-.bkash-logo-wrap img{width:48px;height:48px;object-fit:contain}
-.bkash-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:#fff;margin-bottom:.2rem}
-.bkash-sub{font-size:.82rem;color:rgba(255,255,255,.8)}
-.bkash-body{padding:1.5rem}
-.bkash-number-box{
-  background:linear-gradient(135deg,var(--red-l),var(--surf));
-  border:2px dashed rgba(226,19,110,.3);border-radius:12px;
-  padding:1rem 1.2rem;margin-bottom:1rem;
-  display:flex;align-items:center;justify-content:space-between;
-}
-.bkash-num-label{font-size:.7rem;color:var(--txt-d);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem}
-.bkash-num{font-family:'Fira Code',monospace;font-size:1.3rem;font-weight:700;color:#E2136E;letter-spacing:.05em}
-.bkash-copy-btn{
-  padding:6px 14px;border-radius:7px;border:none;
-  background:#E2136E;color:#fff;cursor:pointer;font-size:.78rem;
-  font-family:'Noto Serif Bengali',serif;font-weight:600;
-  transition:all .18s;display:flex;align-items:center;gap:5px;
-  flex-shrink:0;
-}
-.bkash-copy-btn:hover{background:#9B0049;transform:scale(1.04)}
-.bkash-steps{display:flex;flex-direction:column;gap:.55rem;margin-bottom:1.2rem}
-.bkash-step{
-  display:flex;align-items:flex-start;gap:.7rem;
-  font-size:.82rem;color:var(--txt-m);
-}
-.bkash-step-num{
-  width:22px;height:22px;border-radius:50%;flex-shrink:0;
-  background:#E2136E;color:#fff;
-  display:flex;align-items:center;justify-content:center;
-  font-size:.68rem;font-weight:800;font-family:'Fira Code',monospace;
-  margin-top:1px;
-}
-.bkash-note{
-  background:rgba(226,19,110,.06);border:1px solid rgba(226,19,110,.15);
-  border-radius:9px;padding:.7rem .9rem;
-  font-size:.78rem;color:var(--txt-m);margin-bottom:1rem;
-  display:flex;align-items:flex-start;gap:.5rem;
-}
-.bkash-note i{color:#E2136E;flex-shrink:0;margin-top:2px}
-/* bKash nav button */
-.hbtn-bkash{
-  display:flex;align-items:center;gap:6px;
-  padding:7px 14px;border-radius:8px;
-  background:linear-gradient(135deg,#E2136E,#9B0049);
-  color:#fff;border:none;cursor:pointer;
-  font-family:'Noto Serif Bengali',serif;font-size:.82rem;font-weight:600;
-  transition:all .2s;box-shadow:0 3px 12px rgba(226,19,110,.3);
-}
-.hbtn-bkash:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(226,19,110,.4)}
-.hbtn-bkash i{font-size:.85rem}
-
 /* ════════ APPROVE LOADING STATE ════════ */
 .drow-btn[data-loading="true"]{
   opacity:.6;cursor:not-allowed;pointer-events:none;
@@ -1310,11 +1375,10 @@ canvas{width:100%!important;max-height:220px}
   .asort{width:100%}
 }
 @media(max-width:480px){
-  .stats-wrap{grid-template-columns:repeat(2,1fr)!important}
+  .stats-wrap{grid-template-columns:repeat(2,1fr)!important;max-width:100%!important}
   header{padding:0 .8rem}
   .logo-name{font-size:1rem}
   .hbtn .btn-text{display:none}
-  .hbtn-bkash .bkash-btn-text{display:none}
 }
 
 /* ════════ FIREBASE STATUS ════════ */
@@ -1329,7 +1393,7 @@ canvas{width:100%!important;max-height:220px}
 .fb-dot.off{background:var(--red)}
 
 @media(max-width:480px){
-  .stats-wrap{grid-template-columns:repeat(2,1fr)}
+  .stats-wrap{grid-template-columns:repeat(2,1fr);max-width:100%!important}
   .admin-bar{flex-direction:column;align-items:flex-start}
   .header-right .hbtn .btn-text{display:none}
   .fg2{grid-template-columns:1fr}
@@ -1344,8 +1408,8 @@ canvas{width:100%!important;max-height:220px}
     <div class="loader-ring"></div>
     <div class="loader-icon"><i class="fa-solid fa-droplet"></i></div>
   </div>
-  <div class="cover-txt">রক্তবন্ধন লোড হচ্ছে...</div>
-  <div class="cover-sub">Firebase সংযুক্ত হচ্ছে</div>
+  <div class="cover-txt">লোড হচ্ছে...</div>
+  <div class="cover-sub"></div>
 </div>
 
 <!-- HEADER -->
@@ -1358,17 +1422,10 @@ canvas{width:100%!important;max-height:220px}
     <button class="hbtn theme-btn" onclick="toggleTheme()" title="থিম পরিবর্তন">
       <i class="fa-solid fa-circle-half-stroke" id="theme-icon"></i>
     </button>
-    <button class="hbtn-bkash" onclick="openM('m-bkash')" title="বিকাশে সহায়তা করুন">
-      <i class="fa-solid fa-hand-holding-heart"></i><span class="bkash-btn-text">সহায়তা করুন</span>
-    </button>
     <button class="hbtn" id="nav-d" onclick="showPage('donors',this)">
       <i class="fa-solid fa-users"></i><span class="btn-text">ডোনার</span>
     </button>
-    <button class="hbtn" id="nav-a" onclick="showPage('admin',this)">
-      <i class="fa-solid fa-shield-halved"></i><span class="btn-text">অ্যাডমিন</span>
-      <span id="abadge" style="display:none;background:var(--green);color:#fff;font-size:.58rem;padding:1px 5px;border-radius:5px;font-weight:800">●</span>
-      <span id="pend-badge" style="display:none;background:var(--amber);color:#fff;font-size:.58rem;padding:1px 6px;border-radius:5px;font-weight:800;margin-left:1px"></span>
-    </button>
+
   </div>
 </header>
 
@@ -1377,13 +1434,16 @@ canvas{width:100%!important;max-height:220px}
   <div class="hero-badge"><i class="fa-solid fa-heart-pulse"></i> রক্তদান নেটওয়ার্ক</div>
   <h1>রক্ত দিন,<br><span>জীবন বাঁচান</span></h1>
   <p class="hero-sub">বাংলাদেশের সর্ববৃহৎ রক্তদাতা নেটওয়ার্কে আপনাকে স্বাগতম। সঠিক সময়ে সঠিক রক্ত খুঁজে নিন।</p>
-  <div class="stats-wrap" style="grid-template-columns:repeat(3,1fr);max-width:700px">
+  <div class="stats-wrap" style="grid-template-columns:repeat(2,1fr);max-width:480px">
+    <!-- রো ১: মোট ডোনার + ভিজিটর -->
     <div class="stat-box"><span class="stat-n" id="st-t">—</span><span class="stat-l"><i class="fa-solid fa-users fa-xs"></i> মোট ডোনার</span></div>
-    <div class="stat-box"><span class="stat-n" id="st-r" style="color:var(--green)">—</span><span class="stat-l"><i class="fa-solid fa-circle-check fa-xs"></i> উপলব্ধ</span></div>
-    <div class="stat-box"><span class="stat-n" id="st-g">—</span><span class="stat-l"><i class="fa-solid fa-vials fa-xs"></i> রক্তের গ্রুপ</span></div>
-    <div class="stat-box"><span class="stat-n" id="st-don" style="color:var(--red)">—</span><span class="stat-l"><i class="fa-solid fa-droplet fa-xs"></i> মোট দান</span></div>
-    <div class="stat-box"><span class="stat-n" id="st-w" style="color:var(--amber)">—</span><span class="stat-l"><i class="fa-solid fa-clock fa-xs"></i> অপেক্ষমাণ</span></div>
     <div class="stat-box"><span class="stat-n" id="st-vis" style="color:var(--blue)">—</span><span class="stat-l"><i class="fa-solid fa-eye fa-xs"></i> ভিজিটর</span></div>
+    <!-- রো ২: উপলব্ধ + অপেক্ষমাণ -->
+    <div class="stat-box"><span class="stat-n" id="st-r" style="color:var(--green)">—</span><span class="stat-l"><i class="fa-solid fa-circle-check fa-xs"></i> উপলব্ধ</span></div>
+    <div class="stat-box"><span class="stat-n" id="st-w" style="color:var(--amber)">—</span><span class="stat-l"><i class="fa-solid fa-clock fa-xs"></i> অপেক্ষমাণ</span></div>
+    <!-- রো ৩: মোট দান + বাতিল দান -->
+    <div class="stat-box"><span class="stat-n" id="st-don" style="color:var(--red)">—</span><span class="stat-l"><i class="fa-solid fa-droplet fa-xs"></i> মোট দান</span></div>
+    <div class="stat-box"><span class="stat-n" id="st-cancel-don" style="color:#E65C00">—</span><span class="stat-l"><i class="fa-solid fa-droplet-slash fa-xs"></i> বাতিল দান</span></div>
   </div>
 </div>
 
@@ -1393,7 +1453,7 @@ canvas{width:100%!important;max-height:220px}
     <div class="filter-bar">
       <div class="search-row">
         <i class="fa-solid fa-magnifying-glass si"></i>
-        <input id="srch" placeholder="নাম বা জেলা দিয়ে খুঁজুন..." oninput="debouncedRenderCards()"/>
+        <input id="srch" placeholder="নাম বা জেলা দিয়ে খুঁজুন..." oninput="currentPage=1;debouncedRenderCards()"/>
       </div>
       <div class="blood-chips">
         <button class="chip on" data-g="all" onclick="setF(this)">সব</button>
@@ -1410,6 +1470,7 @@ canvas{width:100%!important;max-height:220px}
     <div id="grid">
       <div class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><h3>লোড হচ্ছে...</h3><p>Firebase থেকে ডেটা আনা হচ্ছে</p></div>
     </div>
+    <div id="pagination"></div>
   </div>
 
   <!-- ADMIN PAGE -->
@@ -1615,6 +1676,18 @@ canvas{width:100%!important;max-height:220px}
           <div id="list-cooldown"></div>
         </div>
 
+        <!-- ── ACTIVE ADMINS ── -->
+        <div class="admin-section" id="sec-admins">
+          <div class="sec-head">
+            <div class="sec-title"><i class="fa-solid fa-user-shield"></i> একটিভ অ্যাডমিন</div>
+          </div>
+          <div id="list-admins">
+            <div style="text-align:center;padding:3rem;color:var(--txt-d)">
+              <i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem;display:block;margin-bottom:.6rem"></i>লোড হচ্ছে...
+            </div>
+          </div>
+        </div>
+
         <!-- ── BLOOD REQUESTS ── -->
         <div class="admin-section" id="sec-requests">
           <div class="sec-head">
@@ -1633,6 +1706,7 @@ canvas{width:100%!important;max-height:220px}
                 <option value="pending">⏳ অপেক্ষমাণ</option>
                 <option value="accepted">✓ একসেপ্ট</option>
                 <option value="donated">✅ দান সম্পন্ন</option>
+                <option value="cancelled_donation">❌ দান হয়নি</option>
                 <option value="rejected">✗ বাতিল</option>
               </select>
             </div>
@@ -1649,9 +1723,188 @@ canvas{width:100%!important;max-height:220px}
   </div>
 </main>
 
+<!-- FOOTER -->
+<footer id="site-footer">
+  <div class="footer-inner">
+
+    <!-- Main Row -->
+    <div class="footer-main">
+
+      <!-- Brand -->
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <div class="footer-logo-icon"><i class="fa-solid fa-droplet"></i></div>
+          <div>
+            <div class="footer-logo-name">রক্ত<span>বন্ধন</span></div>
+            <div class="footer-logo-sub">Blood Donor Network · Bangladesh</div>
+          </div>
+        </div>
+        <p class="footer-tagline">রক্তদানের মাধ্যমে মানুষের পাশে থাকুন।<br>একটি রক্তের ব্যাগ একটি জীবন বাঁচায়।</p>
+        <!-- Social -->
+        <div class="footer-social-row">
+          <a class="footer-social-btn" href="https://facebook.com" target="_blank" rel="noopener" title="Facebook" style="--sc:#1877F2">
+            <i class="fa-brands fa-facebook-f"></i>
+          </a>
+          <a class="footer-social-btn" href="https://wa.me/" target="_blank" rel="noopener" title="WhatsApp" style="--sc:#25D366">
+            <i class="fa-brands fa-whatsapp"></i>
+          </a>
+          <a class="footer-social-btn" href="https://youtube.com" target="_blank" rel="noopener" title="YouTube" style="--sc:#FF0000">
+            <i class="fa-brands fa-youtube"></i>
+          </a>
+          <a class="footer-social-btn" href="https://t.me/" target="_blank" rel="noopener" title="Telegram" style="--sc:#26A5E4">
+            <i class="fa-brands fa-telegram"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="footer-col">
+        <div class="footer-col-title">দ্রুত লিংক</div>
+        <a class="footer-link" href="#" onclick="showPage('donors',document.getElementById('nav-d'));return false;">
+          <i class="fa-solid fa-chevron-right"></i> ডোনার তালিকা
+        </a>
+        <a class="footer-link" href="#" onclick="showPage('admin',document.getElementById('nav-a'));return false;">
+          <i class="fa-solid fa-chevron-right"></i> অ্যাডমিন প্যানেল
+        </a>
+        <a class="footer-link" href="#" onclick="openAdd();return false;">
+          <i class="fa-solid fa-chevron-right"></i> ডোনার যোগ করুন
+        </a>
+      </div>
+
+      <!-- Team -->
+      <div class="footer-col">
+        <div class="footer-col-title">Design & Development</div>
+        <a class="footer-link" href="https://www.facebook.com/share/1DWSaEUsSV/" target="_blank" rel="noopener" style="text-decoration:none">
+          <i class="fa-brands fa-facebook-f" style="color:#1877F2;font-size:.75rem"></i> Ibrahim Khalil
+        </a>
+        <a class="footer-link" href="https://www.facebook.com/samin.khan.348409?mibextid=ZbWKwL" target="_blank" rel="noopener" style="text-decoration:none">
+          <i class="fa-brands fa-facebook-f" style="color:#1877F2;font-size:.75rem"></i> Samin Khan
+        </a>
+        
+      </div>
+
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="footer-bottom">
+      <span><i class="fa-solid fa-droplet fa-xs" style="color:var(--red);margin-right:4px"></i>&copy; ২০২৫ রক্তবন্ধন</span>
+      <div class="footer-bottom-right">
+        <span><i class="fa-solid fa-shield-halved fa-xs"></i> সুরক্ষিত</span>
+        <span class="footer-dot">·</span>
+        <span><i class="fa-solid fa-bolt fa-xs"></i> Firebase চালিত</span>
+        <span class="footer-dot">·</span>
+        <span><i class="fa-solid fa-earth-asia fa-xs"></i> বাংলাদেশ</span>
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<style>
+/* ════════ FOOTER ════════ */
+#site-footer {
+  background: var(--card);
+  border-top: 1px solid var(--bdr);
+  padding-bottom: 5.5rem;
+  margin-top: 2rem;
+}
+.footer-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2.8rem 1.5rem 0;
+}
+
+/* ── Main Row ── */
+.footer-main {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr;
+  gap: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--bdr);
+}
+@media (max-width: 700px) {
+  .footer-main { grid-template-columns: 1fr 1fr; }
+  .footer-brand { grid-column: 1 / -1; }
+}
+@media (max-width: 420px) {
+  .footer-main { grid-template-columns: 1fr; }
+}
+
+/* ── Brand ── */
+.footer-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+.footer-logo-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--red); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; box-shadow: 0 4px 14px var(--red-g);
+  animation: heartbeat 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+.footer-logo-name { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 900; color: var(--txt); }
+.footer-logo-name span { color: var(--red); }
+.footer-logo-sub { font-size: .65rem; color: var(--txt-d); margin-top: 2px; letter-spacing: .04em; }
+.footer-tagline { font-size: .8rem; color: var(--txt-m); line-height: 1.75; margin-bottom: 1.1rem; }
+
+/* ── Social ── */
+.footer-social-row { display: flex; gap: .45rem; flex-wrap: wrap; }
+.footer-social-btn {
+  width: 34px; height: 34px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .88rem; text-decoration: none; color: #fff;
+  background: var(--sc, var(--red));
+  opacity: .88;
+  transition: opacity .18s, transform .18s, box-shadow .18s;
+}
+.footer-social-btn:hover { opacity: 1; transform: translateY(-2px); box-shadow: 0 5px 14px rgba(0,0,0,.18); }
+
+/* ── Columns ── */
+.footer-col-title {
+  font-size: .65rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: var(--txt-d); margin-bottom: .85rem;
+}
+.footer-link {
+  display: flex; align-items: center; gap: .45rem;
+  font-size: .82rem; color: var(--txt-m);
+  text-decoration: none;
+  font-family: 'Noto Serif Bengali', serif;
+  padding: .28rem 0;
+  transition: color .16s;
+}
+.footer-link i { font-size: .55rem; color: var(--red); opacity: .5; transition: opacity .16s, transform .16s; }
+.footer-link:hover { color: var(--red); }
+.footer-link:hover i { opacity: 1; transform: translateX(2px); }
+
+/* ── Team Role ── */
+.footer-team-role {
+  font-size: .7rem; color: var(--txt-d);
+  margin-top: .5rem; padding: .25rem 0;
+  font-style: italic;
+}
+
+/* ── Bottom Bar ── */
+.footer-bottom {
+  padding: .85rem 0;
+  display: flex; align-items: center;
+  justify-content: space-between; flex-wrap: wrap; gap: .5rem;
+  font-size: .7rem; color: var(--txt-d);
+}
+.footer-bottom-right { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
+.footer-dot { opacity: .35; }
+</style>
+
 <!-- FAB (all users — new donors go pending) -->
 <button class="fab" id="fab" onclick="openAdd()"><i class="fa-solid fa-plus"></i></button>
 <div class="fab-label">ডোনার যোগ করুন</div>
+
+<!-- ── DONOR DETAIL POPUP ── -->
+<div id="donor-popup-overlay" onclick="closeDonorPopup()"></div>
+<div id="donor-popup">
+  <div class="dpop-handle-wrap" id="dpop-handle"><div class="dpop-handle"></div></div>
+  <div class="dpop-hero" id="dpop-hero"><!-- filled by JS --></div>
+  <div class="dpop-scroll" id="dpop-scroll"><!-- filled by JS --></div>
+  <div class="dpop-footer" id="dpop-footer"><!-- filled by JS --></div>
+</div>
 
 <!-- Firebase Status -->
 <div class="fb-chip"><div class="fb-dot off" id="fb-dot"></div><span id="fb-txt">সংযোগ হচ্ছে...</span></div>
@@ -1727,21 +1980,7 @@ canvas{width:100%!important;max-height:220px}
           <div class="fg"><label><i class="fa-solid fa-calendar fa-xs"></i> বয়স</label><input id="fa" type="number" placeholder="—" readonly style="background:var(--surf);cursor:not-allowed;opacity:.7"/></div>
         </div>
         <div class="fg"><label><i class="fa-solid fa-phone fa-xs"></i> ফোন নম্বর *</label><input id="fp" placeholder="০১XXXXXXXXX"/></div>
-        <div class="fg2">
-          <div class="fg">
-            <label><i class="fa-solid fa-location-dot fa-xs"></i> জেলা *</label>
-            <select id="fd" onchange="loadThana()">
-              <option value="">-- জেলা নির্বাচন করুন --</option>
-            </select>
-          </div>
-          <div class="fg">
-            <label><i class="fa-solid fa-map-pin fa-xs"></i> থানা / উপজেলা</label>
-            <select id="fad" onchange="void(0)">
-              <option value="">-- আগে জেলা বাছুন --</option>
-            </select>
-          </div>
-        </div>
-        <div class="fg"><label><i class="fa-solid fa-house fa-xs"></i> গ্রাম / এলাকা</label><input id="fvil" placeholder="গ্রাম বা মহল্লার নাম (ঐচ্ছিক)"/></div>
+        <div class="fg"><label><i class="fa-solid fa-location-dot fa-xs"></i> ঠিকানা *</label><input id="faddress" placeholder="জেলা, থানা, গ্রাম/এলাকা লিখুন"/></div>
         <div class="fg">
           <label><i class="fa-solid fa-calendar-days fa-xs"></i> শেষ রক্তদানের তারিখ (দিন/মাস/বছর)</label>
           <div style="display:flex;gap:.4rem">
@@ -1762,7 +2001,7 @@ canvas{width:100%!important;max-height:220px}
             </select>
           </div>
           <input type="hidden" id="fld"/>
-          <small><i class="fa-solid fa-circle-info fa-xs"></i> এই তারিখ থেকে ৯০ দিন পর পুনরায় দান করা যাবে</small>
+          <small><i class="fa-solid fa-circle-info fa-xs"></i> এই তারিখ থেকে ১২০ দিন পর পুনরায় দান করা যাবে</small>
         </div>
         <div class="fg">
           <label><i class="fa-solid fa-award fa-xs"></i> মোট রক্তদান সংখ্যা</label>
@@ -1843,38 +2082,7 @@ canvas{width:100%!important;max-height:220px}
   </div>
 </div>
 
-<!-- BKASH DONATION MODAL -->
-<div class="overlay" id="m-bkash" style="align-items:center">
-  <div class="bkash-modal-box">
-    <div class="bkash-hero">
-      <div class="bkash-logo-wrap">
-        <svg viewBox="0 0 100 100" width="48" height="48">
-          <circle cx="50" cy="50" r="50" fill="#E2136E"/>
-          <text x="50" y="67" font-family="Arial" font-size="42" font-weight="900" fill="white" text-anchor="middle">b</text>
-        </svg>
-      </div>
-      <div class="bkash-title">বিকাশে সহায়তা করুন</div>
-      <div class="bkash-sub">আপনার ছোট্ট সহায়তা একজনের জীবন বাঁচাতে পারে</div>
-    </div>
-    <div class="bkash-body">
-      <div class="bkash-number-box">
-        <div>
-          <div class="bkash-num-label"><i class="fa-solid fa-mobile-screen fa-xs"></i> বিকাশ নম্বর</div>
-          <div class="bkash-num" id="bkash-display-num">01XXXXXXXXX</div>
-        </div>
-        <button class="bkash-copy-btn" onclick="copyBkash()"><i class="fa-solid fa-copy fa-xs" id="bkash-copy-icon"></i> কপি করুন</button>
-      </div>
-      <div class="bkash-steps">
-        <div class="bkash-step"><div class="bkash-step-num">১</div><span>বিকাশ অ্যাপ বা ডায়াল *247# খুলুন</span></div>
-        <div class="bkash-step"><div class="bkash-step-num">২</div><span><strong>Send Money</strong> অথবা <strong>পেমেন্ট</strong> সিলেক্ট করুন</span></div>
-        <div class="bkash-step"><div class="bkash-step-num">৩</div><span>উপরের নম্বরে পরিমাণ পাঠান ও রেফারেন্স: <strong>রক্তবন্ধন</strong></span></div>
-        <div class="bkash-step"><div class="bkash-step-num">৪</div><span>পিন দিয়ে কনফার্ম করুন — ধন্যবাদ! ❤️</span></div>
-      </div>
-      <div class="bkash-note"><i class="fa-solid fa-circle-info"></i><span>আপনার সহায়তা সম্পূর্ণ স্বেচ্ছামূলক।</span></div>
-      <button class="btn-cancel" style="width:100%;text-align:center;flex:none;margin-top:.5rem" onclick="closeM('m-bkash')"><i class="fa-solid fa-xmark"></i> বন্ধ করুন</button>
-    </div>
-  </div>
-</div>
+
 
 <!-- SIDEBAR DROPDOWN PORTAL (fixed position, outside layout) -->
 <div id="sidebar-dropdown" style="display:none;position:fixed;z-index:9000;
@@ -1904,6 +2112,10 @@ canvas{width:100%!important;max-height:220px}
   </button>
   <button class="snav" id="snav-cooldown-btn" onclick="chooseSidebarItem('cooldown',this,'fa-clock','কুলডাউনে')">
     <i class="fa-solid fa-clock"></i> <span>কুলডাউনে</span>
+  </button>
+  <div class="snav-divider" style="display:block!important"></div>
+  <button class="snav" id="snav-admins-btn" onclick="chooseSidebarItem('admins',this,'fa-user-shield','একটিভ অ্যাডমিন')">
+    <i class="fa-solid fa-user-shield"></i> <span>একটিভ অ্যাডমিন</span>
   </button>
 </div>
 
@@ -1945,7 +2157,7 @@ let requests  = [];
 let filterG   = 'all';
 let isAdmin   = false;
 let adminUser = null;
-const CD      = 90;
+const CD      = 120;
 
 /* ══ Cache keys ══ */
 const CACHE_DONORS   = 'rbcache_donors';
@@ -1966,8 +2178,35 @@ let _donorsHash = '', _pendingHash = '';
 
 
 /* ══ Auth state ══ */
-onAuthStateChanged(auth, user => {
+onAuthStateChanged(auth, async user => {
   if (user) {
+    // ── Single-device enforcement ──
+    // Write session token to Firebase; if another device overwrites it, this session becomes invalid
+    const sessionKey = 'session_' + user.uid;
+    const myToken = Date.now().toString(36) + Math.random().toString(36).slice(2);
+    localStorage.setItem(sessionKey, myToken);
+    try {
+      await update(ref(db, 'adminSessions/' + user.uid), {
+        email: user.email,
+        token: myToken,
+        loginAt: new Date().toISOString(),
+        lastSeen: new Date().toISOString()
+      });
+    } catch(e) { console.warn('session write:', e.message); }
+
+    // Watch for session override (another device logged in with same email)
+    const sessionRef = ref(db, 'adminSessions/' + user.uid + '/token');
+    onValue(sessionRef, snap => {
+      const activeToken = snap.val();
+      if (activeToken && activeToken !== myToken) {
+        // Another device has taken over — force logout silently
+        signOut(auth).then(() => {
+          toast('অন্য একটি ডিভাইস থেকে লগইন হয়েছে — এই সেশন বন্ধ হয়ে গেছে', 'warn');
+          showPage('donors', document.getElementById('nav-d'));
+        });
+      }
+    });
+
     isAdmin   = true;
     adminUser = user;
     document.getElementById('abadge').style.display = 'inline';
@@ -2052,6 +2291,7 @@ onValue(ref(db,'stats'), snap => {
   try { localStorage.setItem(CACHE_STATS, JSON.stringify(s)); } catch(e) {}
   if (document.getElementById('st-don')) animNum('st-don', s.totalDonations || 0);
   if (document.getElementById('st-vis')) animNum('st-vis', s.visitors       || 0);
+  if (document.getElementById('st-cancel-don')) animNum('st-cancel-don', s.cancelledDonations || 0);
   const kd = document.getElementById('kpi-don');
   if (kd) kd.textContent = s.totalDonations || 0;
 }, err => console.warn('stats:', err.message));
@@ -2222,7 +2462,7 @@ window.cd = function cd(donor) {
   const left    = Math.max(0, CD - passed);
   const pct     = Math.min(100, Math.round(passed / CD * 100));
   const nx      = new Date(last); nx.setDate(nx.getDate() + CD);
-  const s = passed < 30 ? 'fresh' : passed < CD ? 'wait' : 'ready';
+  const s = passed < 60 ? 'fresh' : passed < CD ? 'wait' : 'ready';
   const result  = { s, left, passed, pct, next: nx.toISOString().split('T')[0] };
   _cdCache.set(cacheKey, result);
   return result;
@@ -2230,8 +2470,8 @@ window.cd = function cd(donor) {
 window.pillHtml = function(c) {
   if (c.s==='na')    return `<span class="cd-pill pill-n"><i class="fa-solid fa-question fa-xs"></i> তথ্য নেই</span>`;
   if (c.s==='ready') return `<span class="cd-pill pill-r"><i class="fa-solid fa-check fa-xs"></i> উপলব্ধ</span>`;
-  if (c.s==='wait')  return `<span class="cd-pill pill-w"><i class="fa-solid fa-clock fa-xs"></i> ${c.left} দিন বাকি</span>`;
-                     return `<span class="cd-pill pill-f"><i class="fa-solid fa-droplet fa-xs"></i> ${c.left} দিন বাকি</span>`;
+  if (c.s==='wait')  return `<span class="cd-pill pill-w"><i class="fa-solid fa-clock fa-xs"></i> ${c.left} দিন (${c.left * 24} ঘন্টা) বাকি</span>`;
+                     return `<span class="cd-pill pill-f"><i class="fa-solid fa-droplet fa-xs"></i> ${c.left} দিন (${c.left * 24} ঘন্টা) বাকি</span>`;
 };
 window.barCls = function(c) { return c.s==='fresh'?'bar-r':c.s==='wait'?'bar-a':'bar-g'; }
 
@@ -2253,6 +2493,12 @@ function updateStats() {
   animNum('st-r', re);
   animNum('st-w', wa);
   animNum('st-g', new Set(donors.map(d=>d.blood).filter(Boolean)).size);
+  // মোট দান
+  const totalDon = donors.reduce((sum,d) => sum + (parseInt(d.donationCount)||0), 0);
+  animNum('st-don', totalDon);
+  // বাতিল দান (cancelled_donation status)
+  const cancelledDon = requests.filter(r => r.status === 'cancelled_donation').length;
+  animNum('st-cancel-don', cancelledDon);
   const pb = document.getElementById('pend-badge');
   if (pb) { pb.textContent = pending.length || ''; pb.style.display = pending.length ? 'inline' : 'none'; }
 }
@@ -2274,13 +2520,19 @@ function animNum(id, val) {
   requestAnimationFrame(tick);
 }
 
-/* ══════ DONOR CARDS ══════ */
+/* ══════ DONOR CARDS (row layout + pagination) ══════ */
+const DONORS_PER_PAGE = 10;
+let currentPage = 1;
+
 const debouncedRenderCards = debounce(() => window.renderCards(), 120);
+
 window.renderCards = function() {
-  const s   = (document.getElementById('srch').value || '').toLowerCase();
+  const s    = (document.getElementById('srch').value || '').toLowerCase();
   const grid = document.getElementById('grid');
-  // only confirmed donors shown on public page
-  const flt  = donors.filter(d => {
+  const pgEl = document.getElementById('pagination');
+
+  // filter
+  const flt = donors.filter(d => {
     const mg = filterG === 'all' || d.blood === filterG;
     const ms = !s || d.name?.toLowerCase().includes(s) || d.district?.toLowerCase().includes(s);
     return mg && ms;
@@ -2288,94 +2540,142 @@ window.renderCards = function() {
 
   if (!flt.length) {
     grid.innerHTML = `<div class="empty-state"><i class="fa-solid fa-droplet-slash"></i><h3>কোনো ডোনার পাওয়া যায়নি</h3><p>ফিল্টার পরিবর্তন করুন অথবা নতুন ডোনার যোগ করুন</p></div>`;
+    if (pgEl) pgEl.innerHTML = '';
     return;
   }
 
-  // Sort: ready/na first, then wait, then fresh/cooldown
+  // sort: available first, then pending/donating, then cooldown
   const sorted = [...flt].sort((a, b) => {
     const score = d => {
       const hasPend = requests.some(r => r.donorId === d.id && r.status === 'pending');
       const hasAcc  = requests.some(r => r.donorId === d.id && r.status === 'accepted');
-      if (hasAcc)  return 2;   // donating — show but below pending
-      if (hasPend) return 1;   // pending request
+      if (hasAcc)  return 2;
+      if (hasPend) return 1;
       const c = cd(d);
-      if (c.s === 'ready' || c.s === 'na') return 0;  // available — TOP
-      if (c.s === 'wait')  return 3;
-      return 4; // fresh/cooldown
+      if (c.s === 'ready' || c.s === 'na') return 0;
+      if (c.s === 'wait') return 3;
+      return 4;
     };
     return score(a) - score(b);
   });
 
-  grid.innerHTML = sorted.map((d, i) => {
-    const c   = cd(d);
-    const pct = c.s==='na' ? 0 : c.pct;
-    const bc  = barCls(c);
-    const dtext = c.s==='na' ? '—' : c.s==='ready' ? 'এখনই দান করতে পারবেন' : `${c.left} দিন বাকি`;
-    const dclr  = c.s==='fresh'?'color:var(--red)':c.s==='wait'?'color:var(--amber)':'color:var(--green)';
+  // clamp page
+  const totalPages = Math.ceil(sorted.length / DONORS_PER_PAGE);
+  if (currentPage > totalPages) currentPage = totalPages;
+  if (currentPage < 1) currentPage = 1;
 
-    // Request states (real-time from requests array)
-    const pendReq = requests.find(r => r.donorId === d.id && r.status === 'pending');
-    const accReq  = requests.find(r => r.donorId === d.id && r.status === 'accepted');
+  const start  = (currentPage - 1) * DONORS_PER_PAGE;
+  const slice  = sorted.slice(start, start + DONORS_PER_PAGE);
+
+  // render rows
+  grid.innerHTML = slice.map((d, i) => {
+    const c   = cd(d);
+    const pendReq    = requests.find(r => r.donorId === d.id && r.status === 'pending');
+    const accReq     = requests.find(r => r.donorId === d.id && r.status === 'accepted');
     const isAvailable = !pendReq && !accReq && (c.s === 'ready' || c.s === 'na');
 
-    // Card border/bg highlight for available donors
+    let statusPill = '';
+    if (accReq) {
+      statusPill = `<span class="dcard-status pill-f"><i class="fa-solid fa-droplet fa-xs"></i> দান করছেন</span>`;
+    } else if (pendReq) {
+      statusPill = `<span class="dcard-status pill-w"><i class="fa-solid fa-hourglass-half fa-xs"></i> পেন্ডিং</span>`;
+    } else if (isAvailable) {
+      statusPill = `<span class="dcard-status pill-r"><i class="fa-solid fa-circle-check fa-xs"></i> উপলব্ধ</span>`;
+    } else {
+      statusPill = `<span class="dcard-status pill-n"><i class="fa-solid fa-clock fa-xs"></i> ${c.left||0} দিন</span>`;
+    }
+
     const cardStyle = isAvailable
-      ? `border-color:rgba(26,138,90,.4);background:linear-gradient(180deg,rgba(26,138,90,.04) 0%,var(--card) 60%);`
-      : accReq
-      ? `border-color:rgba(200,16,46,.35);background:linear-gradient(180deg,rgba(200,16,46,.04) 0%,var(--card) 60%);`
+      ? 'border-color:rgba(26,138,90,.35);'
+      : accReq ? 'border-color:rgba(200,16,46,.3);' : '';
+
+    const badgeAnim = accReq
+      ? 'animation:heartbeat 1.5s ease-in-out infinite;box-shadow:0 0 18px var(--red-g)'
       : '';
 
+    const metaParts = [];
+    if (d.age)  metaParts.push(`<i class="fa-solid fa-cake-candles fa-xs"></i> ${d.age} বছর`);
+    if (d.donationCount) metaParts.push(`<i class="fa-solid fa-award fa-xs" style="color:var(--red)"></i> ${d.donationCount} বার`);
+    if (c.s === 'wait' || c.s === 'fresh') metaParts.push(`<i class="fa-solid fa-hourglass-half fa-xs"></i> ${c.left} দিন বাকি`);
+
     return `
-    <div class="dcard" style="animation-delay:${i*.04}s;${cardStyle}">
-      ${accReq ? `
-      <div style="display:flex;align-items:center;gap:6px;background:linear-gradient(90deg,var(--red-l),transparent);border:1px solid var(--bdr-r);border-radius:8px;padding:6px 11px;margin-bottom:.7rem;font-size:.78rem;color:var(--red);font-weight:700">
-        <i class="fa-solid fa-droplet fa-xs" style="animation:heartbeat 1.2s ease-in-out infinite"></i>
-        রক্তদান করছেন — আবেদন প্রক্রিয়াধীন
-      </div>` : ''}
-      ${isAvailable ? `
-      <div style="display:flex;align-items:center;gap:5px;background:var(--green-l);border:1px solid rgba(26,138,90,.2);border-radius:8px;padding:5px 10px;margin-bottom:.7rem;font-size:.74rem;color:var(--green);font-weight:700">
-        <i class="fa-solid fa-circle-check fa-xs"></i> রক্তদানের জন্য উপযুক্ত
-      </div>` : ''}
-      <div class="card-head">
-        <div class="blood-badge" style="${accReq?'animation:heartbeat 1.5s ease-in-out infinite;box-shadow:0 0 20px var(--red-g)':''}">
-          ${d.blood||'?'}
-        </div>
-        <div class="card-info-top">
-          <div class="card-name">${d.name||'অজানা'}</div>
-          <div class="card-loc"><i class="fa-solid fa-location-dot fa-xs"></i>${d.district||'—'}${d.address?`, ${d.address}`:''}</div>
-        </div>
+    <div class="dcard ${isAvailable ? 'dcard-avail' : ''}"
+         style="animation-delay:${i * .04}s;${cardStyle}"
+         onclick="openDonorPopup('${d.id}')">
+      <div class="blood-badge" style="${badgeAnim}">${d.blood || '?'}</div>
+      <div class="dcard-mid">
+        <div class="dcard-name">${d.name || 'অজানা'}</div>
+        <div class="dcard-loc"><i class="fa-solid fa-location-dot fa-xs"></i>${d.district && d.district !== d.address ? d.district + (d.address ? ', ' + d.address : '') : (d.address || '—')}</div>
+        ${metaParts.length ? `<div class="dcard-meta">${metaParts.join('<span style="opacity:.3">·</span>')}</div>` : ''}
       </div>
-      <div class="card-rows">
-        <div class="card-row"><i class="fa-solid fa-phone"></i>${isAdmin ? (d.phone||'—') : maskPhone(d.phone)}</div>
-        <div class="card-row"><i class="fa-solid fa-cake-candles"></i>বয়স: ${d.age||'—'} বছর</div>
-        <div class="card-row"><i class="fa-solid fa-calendar-days"></i>শেষ দান: ${d.lastDonation||'অজানা'}</div>
-        <div class="card-row"><i class="fa-solid fa-award" style="color:var(--red)"></i>মোট দান: <strong style="font-family:'Fira Code',monospace">${d.donationCount||0}</strong> বার &nbsp;${expBadgeHtml(d.donationCount||0)}</div>
-      </div>
-      ${(c.s==='wait'||c.s==='fresh') ? `<div class="cd-wrap">
-        <div class="cd-top">
-          <span class="cd-label"><i class="fa-solid fa-hourglass-half fa-xs"></i> ৯০ দিনের কুলডাউন</span>
-          ${pillHtml(c)}
-        </div>
-        <div class="cd-bar-bg"><div class="cd-bar ${bc}" style="width:${pct}%"></div></div>
-        <div class="cd-days" style="${dclr}">${dtext} ${pct>0?`(${pct}% সম্পন্ন)`:''}</div>
-      </div>` : ''}
-      <div class="card-footer">
-        ${(() => {
-          if (accReq) {
-            return `<button class="cta-call-blocked" style="cursor:not-allowed;opacity:.65;border-color:var(--bdr-r);color:var(--red)"><i class="fa-solid fa-droplet fa-xs"></i> রক্তদান করছেন</button>`;
-          }
-          if (pendReq) {
-            return `<button class="cta-call-blocked" style="cursor:not-allowed" title="ইতিমধ্যে আবেদন পেন্ডিংয়ে আছে"><i class="fa-solid fa-hourglass-half"></i> আবেদন পেন্ডিংয়ে আছে</button>`;
-          }
-          if (c.s==='ready'||c.s==='na') {
-            return `<button class="cta-btn cta-request" onclick="openRequestModal('${d.id}')"><i class="fa-solid fa-hand-holding-medical"></i> রক্তের আবেদন করুন</button>`;
-          }
-          return `<button class="cta-call-blocked" title="৯০ দিনের কুলডাউন শেষ হয়নি — ${c.left} দিন বাকি"><i class="fa-solid fa-clock-rotate-left"></i> কুলডাউনে আছেন (${c.left} দিন)</button>`;
-        })()}
-        ${isAdmin ? `<button class="cta-btn" onclick="openEdit('${d.id}')"><i class="fa-solid fa-pen-to-square"></i> সম্পাদনা</button>` : ''}
+      <div class="dcard-right">
+        ${statusPill}
+        <span class="dcard-arrow"><i class="fa-solid fa-chevron-right fa-xs"></i></span>
       </div>
     </div>`;
   }).join('');
+
+  // pagination controls
+  if (pgEl) renderPagination(pgEl, totalPages, sorted.length);
+};
+
+function renderPagination(el, totalPages, totalCount) {
+  if (totalPages <= 1) { el.innerHTML = ''; return; }
+
+  const start = (currentPage - 1) * DONORS_PER_PAGE + 1;
+  const end   = Math.min(currentPage * DONORS_PER_PAGE, totalCount);
+
+  let html = '';
+
+  // Prev button
+  html += `<button class="pg-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+    <i class="fa-solid fa-chevron-left fa-xs"></i>
+  </button>`;
+
+  // Page numbers — show max 5 pages around current
+  const pages = [];
+  if (totalPages <= 7) {
+    for (let i = 1; i <= totalPages; i++) pages.push(i);
+  } else {
+    pages.push(1);
+    if (currentPage > 3) pages.push('…');
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) pages.push(i);
+    if (currentPage < totalPages - 2) pages.push('…');
+    pages.push(totalPages);
+  }
+
+  pages.forEach(p => {
+    if (p === '…') {
+      html += `<span class="pg-info">…</span>`;
+    } else {
+      html += `<button class="pg-btn ${p === currentPage ? 'active' : ''}" onclick="goPage(${p})">${p}</button>`;
+    }
+  });
+
+  // Next button
+  html += `<button class="pg-btn" onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+    <i class="fa-solid fa-chevron-right fa-xs"></i>
+  </button>`;
+
+  // Info text
+  html += `<span class="pg-info">${start}–${end} / ${totalCount}</span>`;
+
+  el.innerHTML = html;
+}
+
+window.goPage = function(page) {
+  const s    = (document.getElementById('srch').value || '').toLowerCase();
+  const flt  = donors.filter(d => {
+    const mg = filterG === 'all' || d.blood === filterG;
+    const ms = !s || d.name?.toLowerCase().includes(s) || d.district?.toLowerCase().includes(s);
+    return mg && ms;
+  });
+  const totalPages = Math.ceil(flt.length / DONORS_PER_PAGE);
+  currentPage = Math.max(1, Math.min(page, totalPages));
+  renderCards();
+  // scroll to top of grid smoothly
+  const grid = document.getElementById('grid');
+  if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
 /* ══════ ADMIN GRID (Card-based, mobile-friendly) ══════ */
@@ -2411,6 +2711,7 @@ window.renderAdminGrid = function() {
   const ki = document.getElementById('kpi-total'); if(ki) ki.textContent = donors.length;
   const kr = document.getElementById('kpi-ready'); if(kr) kr.textContent = re;
   const kp = document.getElementById('kpi-pend');  if(kp) kp.textContent = pending.length;
+  const kd2 = document.getElementById('kpi-don');  if(kd2) kd2.textContent = donors.reduce((s,d)=>s+(parseInt(d.donationCount)||0),0);
   // render active section
   if (adminSection === 'dash') renderDashboard();
   else renderSection(adminSection);
@@ -2521,7 +2822,7 @@ window.renderSection = function(sec) {
 
     const pendingReqs  = filtered.filter(r => r.status === 'pending');
     const acceptedReqs = filtered.filter(r => r.status === 'accepted');
-    const otherReqs    = filtered.filter(r => r.status === 'donated' || r.status === 'rejected');
+    const otherReqs    = filtered.filter(r => r.status === 'donated' || r.status === 'rejected' || r.status === 'cancelled_donation');
     let html = '';
     if (pendingReqs.length) {
       html += `<div class="req-section-header"><i class="fa-solid fa-hourglass-half"></i> নতুন আবেদন <span class="req-count-badge">${pendingReqs.length}</span></div>`;
@@ -2532,7 +2833,14 @@ window.renderSection = function(sec) {
       html += `<div style="display:flex;flex-direction:column;gap:.45rem;margin-bottom:1.2rem;width:100%;overflow-x:hidden">${acceptedReqs.map(requestCompactRow).join('')}</div>`;
     }
     if (otherReqs.length) {
-      html += `<div style="display:flex;align-items:center;gap:.6rem;padding:.4rem .6rem;margin-bottom:.6rem;font-size:.78rem;font-weight:700;color:var(--txt-d);border-bottom:1px solid var(--bdr)"><i class="fa-solid fa-clock-rotate-left fa-xs"></i> সম্পন্ন / বাতিল (${otherReqs.length})</div>`;
+      const donatedCount = otherReqs.filter(r=>r.status==='donated').length;
+      const cancelledDonCount2 = otherReqs.filter(r=>r.status==='cancelled_donation').length;
+      const rejectedCount = otherReqs.filter(r=>r.status==='rejected').length;
+      let summaryParts = [];
+      if (donatedCount) summaryParts.push(`✅ সম্পন্ন: ${donatedCount}`);
+      if (cancelledDonCount2) summaryParts.push(`❌ দান হয়নি: ${cancelledDonCount2}`);
+      if (rejectedCount) summaryParts.push(`✗ বাতিল: ${rejectedCount}`);
+      html += `<div style="display:flex;align-items:center;gap:.6rem;padding:.4rem .6rem;margin-bottom:.6rem;font-size:.78rem;font-weight:700;color:var(--txt-d);border-bottom:1px solid var(--bdr)"><i class="fa-solid fa-clock-rotate-left fa-xs"></i> সম্পন্ন / বাতিল (${otherReqs.length}) &nbsp;<span style="font-weight:400;font-size:.7rem">${summaryParts.join(' · ')}</span></div>`;
       html += `<div style="display:flex;flex-direction:column;gap:.45rem;width:100%;overflow-x:hidden">${otherReqs.map(requestCompactRow).join('')}</div>`;
     }
     el.innerHTML = html;
@@ -2550,6 +2858,36 @@ window.renderSection = function(sec) {
     const base = donors.filter(d=>{ const c=cd(d); return c.s==='wait'||c.s==='fresh'; });
     const flt  = filterList(base, 'cd-srch', 'cd-blood');
     setList(el, flt.map(d => donorRow(d)), 'কুলডাউনে কোনো ডোনার নেই');
+  } else if (sec === 'admins') {
+    const el = document.getElementById('list-admins'); if(!el) return;
+    el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--txt-d)"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem;display:block;margin-bottom:.6rem"></i>লোড হচ্ছে...</div>';
+    get(ref(db, 'adminSessions')).then(snap => {
+      const sessions = snap.val() || {};
+      const entries = Object.entries(sessions);
+      if (!entries.length) {
+        el.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--txt-d)"><i class="fa-solid fa-user-slash" style="font-size:2rem;display:block;margin-bottom:.6rem"></i>কোনো একটিভ অ্যাডমিন নেই</div>';
+        return;
+      }
+      const currentEmail = adminUser?.email || '';
+      el.innerHTML = `<div style="display:flex;flex-direction:column;gap:.6rem">` +
+        entries.map(([uid, s]) => {
+          const isMe = s.email === currentEmail;
+          return `<div style="display:flex;align-items:center;gap:.8rem;background:var(--card);border:1.5px solid ${isMe?'var(--bdr-r)':'var(--bdr)'};border-radius:12px;padding:.8rem 1rem;box-shadow:var(--shadow)">
+            <div style="width:42px;height:42px;border-radius:10px;background:${isMe?'var(--red)':'var(--surf)'};color:${isMe?'#fff':'var(--txt-m)'};display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;border:1.5px solid ${isMe?'var(--red)':'var(--bdr)'}">
+              <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:700;font-size:.9rem;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.email||'—'}${isMe?' <span style="background:var(--red);color:#fff;font-size:.58rem;padding:2px 6px;border-radius:5px;font-weight:800;margin-left:4px">আপনি</span>':''}</div>
+              <div style="font-size:.72rem;color:var(--txt-d);margin-top:2px"><i class="fa-solid fa-clock fa-xs"></i> লগইন: ${s.loginAt ? new Date(s.loginAt).toLocaleString('bn-BD') : '—'}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;background:var(--green-l);border:1px solid rgba(26,138,90,.2);border-radius:8px;padding:3px 9px;font-size:.7rem;font-weight:700;color:var(--green);flex-shrink:0">
+              <i class="fa-solid fa-circle fa-xs" style="font-size:.45rem"></i> একটিভ
+            </div>
+          </div>`;
+        }).join('') + `</div>`;
+    }).catch(e => {
+      el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--red)">তথ্য লোড করা যায়নি</div>';
+    });
   }
 };
 
@@ -2651,19 +2989,20 @@ window.renderDashboard = function() {
     options:{ ...baseOpts, plugins:{ legend:{display:false} } }
   });
 
-  // ── Chart 2: status doughnut ──
+  // ── Chart 2: status doughnut (with cancelled donations) ──
   const re = donors.filter(d => { const c=cd(d); return c.s==='ready'||c.s==='na'; }).length;
   const wa = donors.filter(d => cd(d).s==='wait').length;
   const fr = donors.filter(d => cd(d).s==='fresh').length;
   const pp = pending.length;
+  const cancelledDonCount = requests.filter(r => r.status === 'cancelled_donation').length;
 
   chartStatus = new Chart(document.getElementById('chart-status'), {
     type:'doughnut',
     data:{
-      labels:['উপলব্ধ','অপেক্ষমাণ','সদ্য দান','পেন্ডিং'],
+      labels:['উপলব্ধ','অপেক্ষমাণ','সদ্য দান','পেন্ডিং','বাতিল দান'],
       datasets:[{
-        data:[re,wa,fr,pp],
-        backgroundColor:['#1A8A5A','#B5700A','#C8102E','#E0A020'],
+        data:[re,wa,fr,pp,cancelledDonCount],
+        backgroundColor:['#1A8A5A','#B5700A','#C8102E','#E0A020','#E65C00'],
         borderWidth:2,
         borderColor: isDark ? '#161213' : '#fff'
       }]
@@ -2814,9 +3153,9 @@ window.viewDonor = function(id, isPending) {
   const actions = isPending
     ? `<button class="btn-save" style="background:var(--green);box-shadow:none" onclick="approveDonor('${id}');closeM('m-view')"><i class="fa-solid fa-circle-check"></i> অনুমোদন দিন</button>
        <button class="btn-save" style="background:#E53935;box-shadow:none" onclick="rejectDonor('${id}');closeM('m-view')"><i class="fa-solid fa-xmark"></i> বাতিল করুন</button>`
-    : `<button class="btn-save" onclick="openEdit('${id}');closeM('m-view')"><i class="fa-solid fa-pen-to-square"></i> সম্পাদনা</button>
+    : `${isAdmin ? `<button class="btn-save" onclick="openEdit('${id}');closeM('m-view')"><i class="fa-solid fa-pen-to-square"></i> সম্পাদনা</button>` : ''}
        <button class="btn-save" style="background:transparent;border:1.5px solid var(--bdr-r);color:var(--red);box-shadow:none" onclick="openDonate('${id}');closeM('m-view')"><i class="fa-solid fa-droplet"></i> দান রেকর্ড</button>
-       <button class="btn-save" style="background:#E53935;box-shadow:none" onclick="delDonor('${id}');closeM('m-view')"><i class="fa-solid fa-trash-can"></i> মুছুন</button>`;
+       ${isAdmin ? `<button class="btn-save" style="background:#E53935;box-shadow:none" onclick="delDonor('${id}');closeM('m-view')"><i class="fa-solid fa-trash-can"></i> মুছুন</button>` : ''}`;
 
   document.getElementById('m-view-body').innerHTML = `
     ${pendNotice}
@@ -2824,7 +3163,7 @@ window.viewDonor = function(id, isPending) {
       <div class="view-blood-big">${d.blood||'?'}</div>
       <div>
         <div class="view-name">${d.name||'অজানা'}</div>
-        <div class="view-loc"><i class="fa-solid fa-location-dot fa-xs"></i>${d.district||'—'}${d.address?', '+d.address:''}</div>
+        <div class="view-loc"><i class="fa-solid fa-location-dot fa-xs"></i>${d.district && d.district !== d.address ? d.district + (d.address ? ', ' + d.address : '') : (d.address || '—')}</div>
         ${expBadgeHtml(d.donationCount||0)}
       </div>
     </div>
@@ -2838,7 +3177,7 @@ window.viewDonor = function(id, isPending) {
     </div>
     <div class="view-cd">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
-        <span style="font-size:.72rem;color:var(--txt-d);font-weight:600;text-transform:uppercase">৯০ দিন কুলডাউন — ${pct}%</span>
+        <span style="font-size:.72rem;color:var(--txt-d);font-weight:600;text-transform:uppercase">১২০ দিন কুলডাউন — ${pct}%</span>
         <span class="cd-pill ${mp}"><i class="fa-solid fa-circle fa-xs"></i> ${mt}</span>
       </div>
       <div class="cd-bar-bg"><div class="cd-bar ${bc}" style="width:${pct}%"></div></div>
@@ -2900,17 +3239,13 @@ window.openAdd = function() {
     ? '<i class="fa-solid fa-droplet"></i> নতুন ডোনার যোগ করুন'
     : '<i class="fa-solid fa-droplet"></i> ডোনার হিসেবে নিবন্ধন করুন';
   document.getElementById('eid').value = '';
-  ['fn','fg-b','fa','fp','fd','fad','fld','fdob','fw','fvil'].forEach(x => { const el=document.getElementById(x); if(el) el.value=''; }); ['fdob-d','fdob-m','fdob-y'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''}); initDobSelects(); initDistrictSelect(); loadThana();
+  ['fn','fg-b','fa','fp','faddress','fld','fdob','fw'].forEach(x => { const el=document.getElementById(x); if(el) el.value=''; });
+  ['fdob-d','fdob-m','fdob-y'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});
   document.getElementById('fexp').value = '0';
   document.getElementById('age-show').innerHTML = '<i class="fa-solid fa-circle-info fa-xs"></i> বয়স স্বয়ংক্রিয়ভাবে হিসাব হবে';
-  // reset DOB selects
   ['fdob-d','fdob-m','fdob-y'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
   document.getElementById('fdob').value = '';
-  // reset village
-  const vEl = document.getElementById('fvil'); if(vEl) vEl.value='';
   initDobSelects();
-  initDistrictSelect();
-  loadThana();
   // reset last donation selects
   initLastDonSelects();
   ['fld-d','fld-m','fld-y'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
@@ -2918,23 +3253,19 @@ window.openAdd = function() {
   openM('m-donor');
 };
 window.openEdit = function(id) {
+  if (!isAdmin) { toast('শুধুমাত্র অ্যাডমিন এডিট করতে পারবেন', 'warn'); return; }
   const d = donors.find(x => x.id === id); if (!d) return;
-  document.getElementById('m-title').innerHTML = isAdmin
-    ? '<i class="fa-solid fa-pen-to-square"></i> ডোনার সম্পাদনা করুন'
-    : '<i class="fa-solid fa-pen-to-square"></i> তথ্য সম্পাদনার অনুরোধ';
+  document.getElementById('m-title').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> ডোনার সম্পাদনা করুন';
   document.getElementById('eid').value   = id;
   document.getElementById('fn').value    = d.name     || '';
   document.getElementById('fg-b').value  = d.blood    || '';
   document.getElementById('fa').value    = d.age      || '';
   document.getElementById('fp').value    = d.phone    || '';
-  document.getElementById('fd').value    = d.district || '';
-  document.getElementById('fad').value   = d.thana    || d.address || '';
-  // set village
-  const vilEl = document.getElementById('fvil');
-  if (vilEl) vilEl.value = d.village || '';
+  document.getElementById('faddress').value = d.address || d.district || '';
   document.getElementById('fld').value   = d.lastDonation || '';
   document.getElementById('fexp').value  = d.donationCount !== undefined ? d.donationCount : 0;
   // Restore DOB selects
+  initDobSelects();
   if (d.dob) {
     const parts = d.dob.split('-');
     const dEl = document.getElementById('fdob-d');
@@ -2945,16 +3276,6 @@ window.openEdit = function(id) {
     if (yEl) yEl.value = parts[0]||'';
     document.getElementById('fdob').value = d.dob;
     calcAge(d.dob);
-  }
-  // Restore district & thana
-  const distEl = document.getElementById('fd');
-  if (distEl && d.district) {
-    distEl.value = d.district;
-    loadThana();
-    setTimeout(() => {
-      const thEl = document.getElementById('fad');
-      if (thEl) thEl.value = d.thana || d.address || '';
-    }, 50);
   }
   document.getElementById('fw').value    = d.weight || '';
   // Restore last donation date selects
@@ -2981,18 +3302,15 @@ window.saveDonor = async function() {
   const blood= document.getElementById('fg-b').value;
   const age  = document.getElementById('fa').value;
   const phone= document.getElementById('fp').value.trim();
-  const dist = document.getElementById('fd').value.trim();
+  const address = document.getElementById('faddress').value.trim();
   const dob  = document.getElementById('fdob').value;
   const wt   = document.getElementById('fw').value;
-  if (!name||!blood||!dob||!wt||!phone||!dist) { toast('সব * ঘর পূরণ করুন', 'warn'); return; }
+  if (!name||!blood||!dob||!wt||!phone||!address) { toast('সব * ঘর পূরণ করুন', 'warn'); return; }
   if (parseInt(wt) < 45) { toast('ওজন কমপক্ষে ৪৫ কেজি হতে হবে', 'warn'); return; }
   if (parseInt(age) < 18 || parseInt(age) > 65) { toast('বয়স ১৮–৬৫ বছরের মধ্যে হতে হবে', 'warn'); return; }
   btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> সংরক্ষণ হচ্ছে...';
   const payload = {
-    name, blood, age:parseInt(age), phone, district:dist,
-    thana: document.getElementById('fad').value.trim(),
-    address: document.getElementById('fad').value.trim(),
-    village: (document.getElementById('fvil')?.value||'').trim(),
+    name, blood, age:parseInt(age), phone, district: '', address: address,
     dob: document.getElementById('fdob').value || null,
     weight: parseInt(document.getElementById('fw').value) || null,
     lastDonation: document.getElementById('fld').value || null,
@@ -3208,13 +3526,14 @@ window.clearReqFilters = function() {
 /* ══════ COMPACT REQUEST ROW (admin list) ══════ */
 function requestCompactRow(r) {
   const donor = donors.find(d => d.id === r.donorId);
-  const statusCls = r.status === 'accepted' ? 'rs-accepted' : r.status === 'rejected' ? 'rs-rejected' : r.status === 'donated' ? 'rs-donated' : 'rs-pending';
-  const statusTxt = r.status === 'accepted' ? '✓ একসেপ্ট' : r.status === 'rejected' ? '✗ বাতিল' : r.status === 'donated' ? '✅ সম্পন্ন' : '⏳ অপেক্ষমাণ';
+  const isCancelledDon = r.status === 'cancelled_donation';
+  const statusCls = r.status === 'accepted' ? 'rs-accepted' : r.status === 'rejected' ? 'rs-rejected' : r.status === 'donated' ? 'rs-donated' : isCancelledDon ? 'rs-cancelled-don' : 'rs-pending';
+  const statusTxt = r.status === 'accepted' ? '✓ একসেপ্ট' : r.status === 'rejected' ? '✗ বাতিল' : r.status === 'donated' ? '✅ সম্পন্ন' : isCancelledDon ? '❌ দান হয়নি' : '⏳ অপেক্ষমাণ';
   const isAccepted = r.status === 'accepted';
   const isDone     = r.status === 'donated';
 
-  const avatarCls = isDone ? 'done' : isAccepted ? 'acc' : '';
-  const avatarIcon = isDone ? 'circle-check' : isAccepted ? 'droplet' : 'hand-holding-medical';
+  const avatarCls = isDone ? 'done' : isCancelledDon ? 'cancelled' : isAccepted ? 'acc' : '';
+  const avatarIcon = isDone ? 'circle-check' : isCancelledDon ? 'droplet-slash' : isAccepted ? 'droplet' : 'hand-holding-medical';
 
   return `
   <div class="req-row">
@@ -3242,12 +3561,13 @@ function requestCompactRow(r) {
 window.openRequestPopup = function(rid) {
   const r = requests.find(x => x.id === rid); if (!r) return;
   const donor = donors.find(d => d.id === r.donorId);
-  const statusCls = r.status === 'accepted' ? 'rs-accepted' : r.status === 'rejected' ? 'rs-rejected' : r.status === 'donated' ? 'rs-donated' : 'rs-pending';
-  const statusTxt = r.status === 'accepted' ? '✓ একসেপ্ট করা হয়েছে' : r.status === 'rejected' ? '✗ বাতিল করা হয়েছে' : r.status === 'donated' ? '✅ দান সম্পন্ন' : '⏳ অপেক্ষমাণ';
+  const isCancelledDon2 = r.status === 'cancelled_donation';
+  const statusCls = r.status === 'accepted' ? 'rs-accepted' : r.status === 'rejected' ? 'rs-rejected' : r.status === 'donated' ? 'rs-donated' : isCancelledDon2 ? 'rs-cancelled-don' : 'rs-pending';
+  const statusTxt = r.status === 'accepted' ? '✓ একসেপ্ট করা হয়েছে' : r.status === 'rejected' ? '✗ বাতিল করা হয়েছে' : r.status === 'donated' ? '✅ দান সম্পন্ন' : isCancelledDon2 ? '❌ দান হয়নি' : '⏳ অপেক্ষমাণ';
   const isPending  = r.status === 'pending';
   const isAccepted = r.status === 'accepted';
   const isDone     = r.status === 'donated';
-  const isRejected = r.status === 'rejected';
+  const isRejected = r.status === 'rejected' || isCancelledDon2;
 
   // Action buttons
   let actionBtns = '';
@@ -3258,7 +3578,7 @@ window.openRequestPopup = function(rid) {
   } else if (isAccepted && donor) {
     actionBtns = `
       <button class="ract ract-donate-done" onclick="completeDonation('${r.id}','${donor.id}');closeRequestPopup()"><i class="fa-solid fa-droplet"></i> দান হয়েছে ✓</button>
-      <button class="ract ract-x" onclick="updateRequestStatus('${r.id}','rejected');closeRequestPopup()"><i class="fa-solid fa-xmark"></i> বাতিল করুন</button>`;
+      <button class="ract ract-cancel-don" onclick="cancelDonation('${r.id}','${donor.id}');closeRequestPopup()"><i class="fa-solid fa-droplet-slash"></i> দান হয়নি</button>`;
   } else if (isDone || isRejected) {
     actionBtns = `
       <button class="ract" style="border-color:rgba(26,138,90,.35);color:var(--green)" onclick="showInvoice('${r.id}');closeRequestPopup()"><i class="fa-solid fa-file-invoice"></i> ইনভয়েস</button>
@@ -3292,7 +3612,7 @@ window.openRequestPopup = function(rid) {
           <div class="req-popup-section-title"><i class="fa-solid fa-droplet fa-xs"></i> ডোনারের তথ্য</div>
           <div class="req-popup-field"><i class="fa-solid fa-user"></i><span><strong>${donor.name||'—'}</strong></span></div>
           <div class="req-popup-field"><i class="fa-solid fa-droplet" style="color:var(--red)"></i><span style="font-weight:800;color:var(--red)">${donor.blood||'?'}</span></div>
-          <div class="req-popup-field"><i class="fa-solid fa-location-dot"></i><span>${donor.district||'—'}${donor.address?', '+donor.address:''}</span></div>
+          <div class="req-popup-field"><i class="fa-solid fa-location-dot"></i><span>${donor.district && donor.district !== donor.address ? donor.district + (donor.address ? ', ' + donor.address : '') : (donor.address || '—')}</span></div>
           <div class="req-popup-field"><i class="fa-solid fa-phone"></i><span>${donor.phone||'—'}</span></div>
           <div class="req-popup-field"><i class="fa-solid fa-award"></i><span>মোট দান: <strong>${donor.donationCount||0} বার</strong></span></div>
         </div>` : `<div class="req-popup-section" style="color:var(--txt-d);font-size:.82rem"><i class="fa-solid fa-circle-exclamation" style="color:var(--amber)"></i> ডোনারের তথ্য পাওয়া যায়নি</div>`}
@@ -3318,12 +3638,13 @@ window.closeRequestPopup = function() {
 /* ══════ REQUEST ROW (admin view) ══════ */
 function requestRow(r) {
   const donor = donors.find(d => d.id === r.donorId);
-  const statusCls = r.status === 'accepted' ? 'rs-accepted' : r.status === 'rejected' ? 'rs-rejected' : r.status === 'donated' ? 'rs-donated' : 'rs-pending';
-  const statusTxt = r.status === 'accepted' ? '✓ একসেপ্ট' : r.status === 'rejected' ? '✗ বাতিল' : r.status === 'donated' ? '✅ দান সম্পন্ন' : '⏳ অপেক্ষমাণ';
+  const isCancelledDon3 = r.status === 'cancelled_donation';
+  const statusCls = r.status === 'accepted' ? 'rs-accepted' : r.status === 'rejected' ? 'rs-rejected' : r.status === 'donated' ? 'rs-donated' : isCancelledDon3 ? 'rs-cancelled-don' : 'rs-pending';
+  const statusTxt = r.status === 'accepted' ? '✓ একসেপ্ট' : r.status === 'rejected' ? '✗ বাতিল' : r.status === 'donated' ? '✅ দান সম্পন্ন' : isCancelledDon3 ? '❌ দান হয়নি' : '⏳ অপেক্ষমাণ';
   const isPending  = r.status === 'pending';
   const isAccepted = r.status === 'accepted';
   const isDone     = r.status === 'donated';
-  const isRejected = r.status === 'rejected';
+  const isRejected = r.status === 'rejected' || isCancelledDon3;
 
   // Row 1: Call buttons
   const row1 = `
@@ -3359,8 +3680,8 @@ function requestRow(r) {
       <button class="ract ract-donate-done" onclick="completeDonation('${r.id}','${donor.id}')">
         <i class="fa-solid fa-droplet"></i> দান হয়েছে ✓
       </button>
-      <button class="ract ract-x" onclick="updateRequestStatus('${r.id}','rejected')">
-        <i class="fa-solid fa-xmark"></i> বাতিল করুন
+      <button class="ract ract-cancel-don" onclick="cancelDonation('${r.id}','${donor.id}')">
+        <i class="fa-solid fa-droplet-slash"></i> দান হয়নি
       </button>`;
   }
   if (isDone || isRejected) {
@@ -3380,8 +3701,8 @@ function requestRow(r) {
   return `
   <div class="rcard" id="rcard-${r.id}">
     <div class="rcard-head">
-      <div class="rcard-avatar" style="${isDone?'background:linear-gradient(135deg,var(--green),#0D6040)':isAccepted?'background:linear-gradient(135deg,var(--red),var(--red-d));animation:heartbeat 1.5s ease-in-out infinite':''}">
-        <i class="fa-solid fa-${isDone?'circle-check':isAccepted?'droplet':'hand-holding-medical'}"></i>
+      <div class="rcard-avatar" style="${isDone?'background:linear-gradient(135deg,var(--green),#0D6040)':isCancelledDon3?'background:linear-gradient(135deg,#E65C00,#B34600)':isAccepted?'background:linear-gradient(135deg,var(--red),var(--red-d));animation:heartbeat 1.5s ease-in-out infinite':''}">
+        <i class="fa-solid fa-${isDone?'circle-check':isCancelledDon3?'droplet-slash':isAccepted?'droplet':'hand-holding-medical'}"></i>
       </div>
       <div style="flex:1;min-width:0">
         <div class="rcard-name">${r.requesterName||'অজানা'}</div>
@@ -3425,6 +3746,158 @@ function requestRow(r) {
 }
 
 /* ══════ OPEN REQUEST MODAL (public) ══════ */
+/* ══════ DONOR DETAIL POPUP (bottom sheet) ══════ */
+window._donorPopupDrag = {};
+
+window.openDonorPopup = function(donorId) {
+  const d = donors.find(x => x.id === donorId);
+  if (!d) return;
+  const c    = cd(d);
+  const pct  = c.s === 'na' ? 0 : c.pct;
+  const bc   = barCls(c);
+  const mp   = c.s==='na'?'pill-n':c.s==='ready'?'pill-r':c.s==='wait'?'pill-w':'pill-f';
+  const mt   = c.s==='na'?'তথ্য নেই':c.s==='ready'?'উপলব্ধ':`${c.left} দিন বাকি`;
+  const dtext= c.s==='na'?'—':c.s==='ready'?'এখনই দান করতে পারবেন':`${c.left} দিন বাকি`;
+  const dclr = c.s==='fresh'?'color:var(--red)':c.s==='wait'?'color:var(--amber)':'color:var(--green)';
+
+  const pendReq = requests.find(r => r.donorId === d.id && r.status === 'pending');
+  const accReq  = requests.find(r => r.donorId === d.id && r.status === 'accepted');
+  const isAvailable = !pendReq && !accReq && (c.s === 'ready' || c.s === 'na');
+
+  // Hero
+  document.getElementById('dpop-hero').innerHTML = `
+    <div class="dpop-blood" style="${accReq?'animation:heartbeat 1.5s ease-in-out infinite':''}">
+      ${d.blood||'?'}
+    </div>
+    <div style="flex:1;min-width:0">
+      <div class="dpop-name">${d.name||'অজানা'}</div>
+      <div class="dpop-loc"><i class="fa-solid fa-location-dot fa-xs"></i>${d.district && d.district !== d.address ? d.district + (d.address ? ', ' + d.address : '') : (d.address || '—')}</div>
+      <div style="margin-top:5px">${expBadgeHtml(d.donationCount||0)}</div>
+    </div>
+    <button class="dpop-close" onclick="closeDonorPopup()"><i class="fa-solid fa-xmark"></i></button>`;
+
+  // Status bar
+  let statusBar = '';
+  if (accReq) {
+    statusBar = `<div style="display:flex;align-items:center;gap:7px;background:linear-gradient(90deg,var(--red-l),transparent);border:1px solid var(--bdr-r);border-radius:10px;padding:9px 13px;margin-bottom:.9rem;font-size:.8rem;color:var(--red);font-weight:700"><i class="fa-solid fa-droplet fa-xs" style="animation:heartbeat 1.2s ease-in-out infinite"></i> রক্তদান করছেন — আবেদন প্রক্রিয়াধীন</div>`;
+  } else if (isAvailable) {
+    statusBar = `<div style="display:flex;align-items:center;gap:7px;background:var(--green-l);border:1px solid rgba(26,138,90,.2);border-radius:10px;padding:9px 13px;margin-bottom:.9rem;font-size:.8rem;color:var(--green);font-weight:700"><i class="fa-solid fa-circle-check fa-xs"></i> রক্তদানের জন্য উপযুক্ত</div>`;
+  } else if (pendReq) {
+    statusBar = `<div style="display:flex;align-items:center;gap:7px;background:var(--amber-l);border:1px solid rgba(181,112,10,.2);border-radius:10px;padding:9px 13px;margin-bottom:.9rem;font-size:.8rem;color:var(--amber);font-weight:700"><i class="fa-solid fa-hourglass-half fa-xs"></i> আবেদন পেন্ডিংয়ে আছে</div>`;
+  }
+
+  // Cooldown section
+  const cooldownHtml = (c.s==='wait'||c.s==='fresh') ? `
+  <div class="dpop-cd">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
+      <span style="font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--txt-d);font-weight:700"><i class="fa-solid fa-hourglass-half fa-xs"></i> ১২০ দিনের কুলডাউন</span>
+      <span class="cd-pill ${mp}"><i class="fa-solid fa-circle fa-xs"></i> ${mt}</span>
+    </div>
+    <div class="cd-bar-bg"><div class="cd-bar ${bc}" style="width:${pct}%"></div></div>
+    <div class="cd-days" style="${dclr};margin-top:.35rem">${dtext} ${pct>0?`(${pct}% সম্পন্ন)`:''}</div>
+    <div class="cd-days" style="font-size:.66rem;color:var(--txt-d);margin-top:3px"><i class="fa-solid fa-clock fa-xs"></i> বাকি: ${c.left} দিন = ${(c.left||0)*24} ঘন্টা</div>
+    ${c.next?`<div style="font-size:.72rem;color:var(--txt-d);margin-top:3px">পরবর্তী যোগ্যতা: <strong>${c.next}</strong></div>`:''}
+  </div>` : '';
+
+  // Scroll body
+  document.getElementById('dpop-scroll').innerHTML = `
+    ${statusBar}
+    <div class="dpop-grid">
+      <div class="dpop-field">
+        <div class="dpop-field-label"><i class="fa-solid fa-phone fa-xs"></i> ফোন</div>
+        <div class="dpop-field-val">${isAdmin ? (d.phone||'—') : maskPhone(d.phone)}</div>
+      </div>
+      <div class="dpop-field">
+        <div class="dpop-field-label"><i class="fa-solid fa-cake-candles fa-xs"></i> বয়স</div>
+        <div class="dpop-field-val">${d.age||'—'} বছর</div>
+      </div>
+      <div class="dpop-field">
+        <div class="dpop-field-label"><i class="fa-solid fa-weight-scale fa-xs"></i> ওজন</div>
+        <div class="dpop-field-val">${d.weight?d.weight+' কেজি':'—'}</div>
+      </div>
+      <div class="dpop-field">
+        <div class="dpop-field-label"><i class="fa-solid fa-calendar-days fa-xs"></i> শেষ দান</div>
+        <div class="dpop-field-val" style="font-size:.82rem">${d.lastDonation||'অজানা'}</div>
+      </div>
+      <div class="dpop-field" style="grid-column:1/-1">
+        <div class="dpop-field-label"><i class="fa-solid fa-award fa-xs"></i> মোট দান</div>
+        <div class="dpop-field-val"><span style="font-family:'Fira Code',monospace;font-size:1.05rem;color:var(--red)">${d.donationCount||0}</span> বার &nbsp; ${expBadgeHtml(d.donationCount||0)}</div>
+      </div>
+    </div>
+    ${cooldownHtml}`;
+
+  // Footer action buttons
+  let footerHtml = '';
+  if (accReq) {
+    footerHtml = `<button class="btn-cancel" style="flex:1;opacity:.65;cursor:not-allowed"><i class="fa-solid fa-droplet fa-xs"></i> রক্তদান করছেন</button>`;
+  } else if (pendReq) {
+    footerHtml = `<button class="btn-cancel" style="flex:1;cursor:not-allowed"><i class="fa-solid fa-hourglass-half"></i> পেন্ডিংয়ে আছে</button>`;
+  } else if (c.s==='ready' || c.s==='na') {
+    footerHtml = `<button class="btn-save" onclick="openRequestModalFromPopup('${d.id}')"><i class="fa-solid fa-hand-holding-medical"></i> রক্তের আবেদন করুন</button>`;
+  } else {
+    footerHtml = `<button class="btn-cancel" style="flex:1;cursor:not-allowed;font-size:.78rem"><i class="fa-solid fa-clock-rotate-left"></i> কুলডাউনে (${c.left} দিন বাকি)</button>`;
+  }
+  if (isAdmin) {
+    footerHtml += `<button class="btn-cancel" style="flex:none;padding:.75rem 1rem" onclick="openEdit('${d.id}');closeDonorPopup()"><i class="fa-solid fa-pen-to-square"></i></button>`;
+  }
+  document.getElementById('dpop-footer').innerHTML = footerHtml;
+
+  // Open
+  const ov = document.getElementById('donor-popup-overlay');
+  const pp = document.getElementById('donor-popup');
+  ov.classList.add('open');
+  pp.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // ESC to close
+  window._dpopEscHandler = e => { if (e.key === 'Escape') closeDonorPopup(); };
+  document.addEventListener('keydown', window._dpopEscHandler);
+
+  // Swipe-to-close on handle
+  const handle = document.getElementById('dpop-handle');
+  let startY = 0, startT = 0;
+  const onTouchStart = e => { startY = e.touches[0].clientY; startT = Date.now(); };
+  const onTouchMove  = e => {
+    const dy = e.touches[0].clientY - startY;
+    if (dy > 0) pp.style.transform = `translateY(${dy}px)`;
+  };
+  const onTouchEnd   = e => {
+    const dy = e.changedTouches[0].clientY - startY;
+    const dt = Date.now() - startT;
+    pp.style.transform = '';
+    if (dy > 80 || (dy > 40 && dt < 250)) closeDonorPopup();
+  };
+  handle.addEventListener('touchstart', onTouchStart, {passive:true});
+  handle.addEventListener('touchmove',  onTouchMove,  {passive:true});
+  handle.addEventListener('touchend',   onTouchEnd,   {passive:true});
+  window._donorPopupDrag = { onTouchStart, onTouchMove, onTouchEnd, handle };
+};
+
+window.closeDonorPopup = function() {
+  const ov = document.getElementById('donor-popup-overlay');
+  const pp = document.getElementById('donor-popup');
+  ov.classList.remove('open');
+  pp.classList.remove('open');
+  document.body.style.overflow = '';
+  // cleanup ESC listener
+  if (window._dpopEscHandler) {
+    document.removeEventListener('keydown', window._dpopEscHandler);
+    window._dpopEscHandler = null;
+  }
+  // cleanup drag listeners
+  const { handle, onTouchStart, onTouchMove, onTouchEnd } = window._donorPopupDrag;
+  if (handle) {
+    handle.removeEventListener('touchstart', onTouchStart);
+    handle.removeEventListener('touchmove',  onTouchMove);
+    handle.removeEventListener('touchend',   onTouchEnd);
+  }
+};
+
+window.openRequestModalFromPopup = function(donorId) {
+  closeDonorPopup();
+  setTimeout(() => openRequestModal(donorId), 320);
+};
+
 window.openRequestModal = function(donorId) {
   const d = donors.find(x => x.id === donorId);
   if (!d) return;
@@ -3529,6 +4002,35 @@ window.completeDonation = async function(rid, donorId) {
   }
 };
 
+/* ══════ CANCEL DONATION (দান হয়নি) ══════ */
+window.cancelDonation = async function(rid, donorId) {
+  const r = requests.find(x => x.id === rid);
+  const d = donors.find(x => x.id === donorId);
+  if (!d) { toast('ডোনার পাওয়া যায়নি', 'err'); return; }
+  if (!confirm(`"${d.name}"-এর দান বাতিল করবেন?\n\n❌ দান সম্পন্ন হয়নি\n✅ ডোনার আবার উপলব্ধ অবস্থায় ফিরে যাবে`)) return;
+
+  const btn = document.querySelector(`#rcard-${rid} .ract[onclick*="cancelDonation"]`);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> সংরক্ষণ হচ্ছে...'; }
+
+  try {
+    // 1. Mark request as cancelled_donation (দান হয়নি)
+    await update(ref(db, 'bloodRequests/' + rid), {
+      status: 'cancelled_donation',
+      cancelledAt: today(),
+      resolvedAt: today()
+    });
+    // 2. Update global stats: cancelledDonations++
+    await update(ref(db, 'stats'), { cancelledDonations: increment(1) });
+    // 3. Donor's lastDonation and donationCount remain unchanged (already available if cooldown passed)
+    //    But we invalidate cooldown cache so status refreshes correctly
+    _cdCache.delete(donorId + '|' + (d.lastDonation || ''));
+    toast(`❌ ${d.name}-এর দান বাতিল করা হয়েছে। ডোনার আবার উপলব্ধ।`, 'ok');
+  } catch(e) {
+    toast(e.message, 'err');
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-droplet-slash"></i> দান হয়নি'; }
+  }
+};
+
 /* ══════ VIEW DONOR DETAIL from request card ══════ */
 window.viewDonorDetail = function(donorId) {
   viewDonor(donorId, false);
@@ -3541,6 +4043,7 @@ window.deleteRequest = async function(rid) {
     toast('একসেপ্ট করা আবেদন মুছে ফেলা যাবে না', 'warn');
     return;
   }
+  // cancelled_donation (দান হয়নি) মুছে ফেলা যাবে
   if (!confirm('এই আবেদনটি মুছে ফেলবেন?')) return;
   try {
     await remove(ref(db, 'bloodRequests/' + rid));
@@ -3568,6 +4071,7 @@ window.setF = function(btn) {
   document.querySelectorAll('.chip').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
   filterG = btn.dataset.g;
+  currentPage = 1;
   renderCards();
 };
 
@@ -3578,6 +4082,8 @@ window.showPage = function(pg, btn) {
   document.getElementById('pg-donors').style.display    = isDon ? 'block' : 'none';
   document.getElementById('pg-admin').style.display     = isDon ? 'none'  : 'block';
   document.getElementById('hero-section').style.display = isDon ? 'block' : 'none';
+  const footer = document.getElementById('site-footer');
+  if (footer) footer.style.display = isDon ? 'block' : 'none';
   // FAB সবসময় donors page-এ দেখা যাবে
   const fab = document.getElementById('fab');
   if (isDon) fab.classList.remove('fab-hidden');
@@ -3622,6 +4128,10 @@ window.doLogin = async function() {
 
 window.doLogout = async function() {
   if (!confirm('অ্যাডমিন থেকে লগআউট করবেন?')) return;
+  if (adminUser) {
+    try { await remove(ref(db, 'adminSessions/' + adminUser.uid)); } catch(e) {}
+    localStorage.removeItem('session_' + adminUser.uid);
+  }
   await signOut(auth);
   // FAB stays visible even after logout (users can still submit)
   showPage('donors', document.getElementById('nav-d'));
